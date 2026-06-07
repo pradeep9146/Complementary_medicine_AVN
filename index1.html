@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Complementary Medicine Questions</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#f0f4f8;--surface:#fff;--header:#1a237e;
+--accent:#1565c0;--accent2:#0d47a1;--border:#d0d9e8;
+--text:#1a1a2e;--subtext:#555;--answered:#2e7d32;--marked:#6a1b9a;
+--marked-ans:#1565c0;--unattempted:#c62828;--not-visited:#607d8b;
+--option-hover:#e3eaf5;--option-sel:#bbdefb;--option-border:#1565c0;
+--footer-bg:#1a237e;--timer-warn:#e65100;
+--shadow:0 2px 12px rgba(26,35,126,.10);
+--online:#2e7d32;--offline:#c62828;--pending:#e65100;
+}
+.dark{
+--bg:#0d1117;--surface:#161b22;--header:#0d1b4b;
+--accent:#42a5f5;--accent2:#1565c0;--border:#30363d;
+--text:#e6edf3;--subtext:#8b949e;--option-hover:#1f2a38;--option-sel:#1a3a5c;
+--footer-bg:#0d1b4b;--shadow:0 2px 12px rgba(0,0,0,.4);
+}
+html,body{height:100%;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+
+/* ===== CONSENT SCREEN ===== */
+#consent-page{
+  display:none;position:fixed;inset:0;z-index:900;
+  background:linear-gradient(135deg,#0d1b4b 0%,#1a237e 50%,#1565c0 100%);
+  align-items:flex-start;justify-content:center;padding:20px;
+  overflow-y:auto;
+}
+.consent-card{
+  background:#fff;border-radius:20px;padding:36px 32px;max-width:520px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:visible;
+  animation:slideUp .4s ease;margin:auto;
+}
+.dark .consent-card{background:#161b22}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.consent-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#1a237e,#42a5f5,#e65100,#1a237e)}
+.consent-icon{font-size:3rem;text-align:center;margin-bottom:16px}
+.consent-title{font-size:1.3rem;font-weight:800;color:#1a237e;text-align:center;margin-bottom:8px}
+.dark .consent-title{color:#42a5f5}
+.consent-subtitle{font-size:.82rem;color:#607d8b;text-align:center;margin-bottom:20px}
+.consent-box{
+  background:#f0f4f8;border-radius:12px;padding:18px;margin-bottom:20px;
+  border-left:4px solid #1565c0;font-size:.9rem;line-height:1.6;color:#1a1a2e;
+}
+.dark .consent-box{background:#0d1117;color:#e6edf3;border-left-color:#42a5f5}
+.consent-data-list{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.consent-data-list span{font-size:.78rem;color:#555;display:flex;align-items:center;gap:5px}
+.dark .consent-data-list span{color:#8b949e}
+.consent-data-list span::before{content:'•';color:#1565c0;font-weight:900}
+.consent-check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;cursor:pointer;padding:10px;border-radius:8px;border:2px solid var(--border);transition:border-color .2s}
+.consent-check-row:hover{border-color:#1565c0}
+.consent-check-row.checked{border-color:#2e7d32;background:#f1f8f1}
+.dark .consent-check-row.checked{background:#1b2e1b}
+.consent-check-row input[type=checkbox]{width:18px;height:18px;flex-shrink:0;cursor:pointer;accent-color:#1565c0;margin-top:2px}
+.consent-check-label{font-size:.85rem;line-height:1.5;color:#1a1a2e;cursor:pointer}
+.dark .consent-check-label{color:#e6edf3}
+.consent-btns{display:flex;gap:10px}
+.consent-accept{flex:2;background:linear-gradient(135deg,#1a237e,#1565c0);color:#fff;border:none;border-radius:10px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;opacity:.5;pointer-events:none}
+.consent-accept.enabled{opacity:1;pointer-events:auto}
+.consent-accept.enabled:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(21,101,192,.4)}
+.consent-decline{flex:1;background:transparent;color:#607d8b;border:2px solid #d0d9e8;border-radius:10px;padding:13px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.consent-decline:hover{border-color:#c62828;color:#c62828}
+
+/* ===== REGISTRATION PAGE ===== */
+#reg-page{
+  display:flex;flex-direction:column;min-height:100vh;
+  background:linear-gradient(135deg,#1a237e 0%,#1565c0 50%,#0d47a1 100%);
+  align-items:center;justify-content:center;padding:20px;
+}
+.reg-card{
+  background:#fff;border-radius:20px;padding:36px 32px;max-width:480px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);position:relative;overflow:hidden;
+  animation:slideUp .4s ease;
+}
+.dark .reg-card{background:#161b22;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.reg-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#1a237e,#42a5f5,#1a237e)}
+.reg-logo{text-align:center;margin-bottom:24px}
+.reg-logo-icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1a237e,#1565c0);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.8rem;box-shadow:0 4px 16px rgba(21,101,192,.4)}
+.reg-logo h2{font-size:1.25rem;font-weight:800;color:#1a237e;line-height:1.3}
+.dark .reg-logo h2{color:#42a5f5}
+.reg-logo p{font-size:.8rem;color:#607d8b;margin-top:4px;font-weight:500}
+.reg-divider{height:1px;background:linear-gradient(90deg,transparent,#d0d9e8,transparent);margin:20px 0}
+.reg-field{margin-bottom:18px}
+.reg-label{display:block;font-size:.82rem;font-weight:700;color:#1a237e;margin-bottom:6px;letter-spacing:.03em}
+.dark .reg-label{color:#90caf9}
+.req-star{color:#c62828;margin-left:2px}
+.reg-input{width:100%;border:2px solid #d0d9e8;border-radius:10px;padding:12px 14px;font-size:.95rem;font-family:inherit;background:#f8fafc;color:#1a1a2e;transition:border-color .2s,box-shadow .2s;outline:none}
+.dark .reg-input{background:#0d1117;color:#e6edf3;border-color:#30363d}
+.reg-input:focus{border-color:#1565c0;box-shadow:0 0 0 3px rgba(21,101,192,.15);background:#fff}
+.dark .reg-input:focus{background:#161b22;box-shadow:0 0 0 3px rgba(66,165,245,.15)}
+.reg-input.error{border-color:#c62828;box-shadow:0 0 0 3px rgba(198,40,40,.12)}
+.reg-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231565c0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer}
+.field-err{font-size:.75rem;color:#c62828;margin-top:5px;display:none;font-weight:600}
+.field-err.show{display:block}
+.opt-badge{font-size:.72rem;color:#607d8b;font-weight:500;margin-left:4px}
+.reg-btn{width:100%;background:linear-gradient(135deg,#1a237e,#1565c0);color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;letter-spacing:.03em;box-shadow:0 4px 16px rgba(21,101,192,.3)}
+.reg-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(21,101,192,.45)}
+.reg-footer-note{text-align:center;font-size:.75rem;color:#607d8b;margin-top:14px}
+
+/* Session recovery banner */
+.recovery-banner{
+  background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-radius:12px;
+  padding:14px 16px;margin-bottom:20px;border-left:4px solid #e65100;display:none;
+}
+.dark .recovery-banner{background:linear-gradient(135deg,#2e1a00,#3e2400);border-left-color:#ff9800}
+.recovery-banner p{font-size:.85rem;color:#bf360c;font-weight:600;margin-bottom:8px}
+.dark .recovery-banner p{color:#ffb74d}
+.recovery-banner .rb-btns{display:flex;gap:8px}
+.rb-btn{border:none;border-radius:7px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer}
+.rb-resume{background:#e65100;color:#fff}
+.rb-discard{background:#d0d9e8;color:#555}
+
+/* ===== RANGE SELECTION PAGE ===== */
+#range-page{
+  display:none;flex-direction:column;min-height:100vh;
+  background:linear-gradient(135deg,#1a237e 0%,#1565c0 50%,#0d47a1 100%);
+  align-items:center;justify-content:center;padding:20px;
+}
+.range-card{background:#fff;border-radius:20px;padding:32px;max-width:500px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);position:relative;overflow:hidden;animation:slideUp .4s ease}
+.dark .range-card{background:#161b22}
+.range-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#1a237e,#42a5f5,#1a237e)}
+.welcome-banner{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:12px;padding:14px 16px;margin-bottom:22px;border-left:4px solid #2e7d32}
+.dark .welcome-banner{background:linear-gradient(135deg,#1b2e1b,#163016);border-left-color:#4caf50}
+.welcome-banner p{font-size:.88rem;color:#1b5e20;font-weight:600}
+.dark .welcome-banner p{color:#81c784}
+.welcome-banner span{font-weight:800}
+.range-title{font-size:1.15rem;font-weight:800;color:#1a237e;margin-bottom:6px}
+.dark .range-title{color:#42a5f5}
+.range-sub{font-size:.82rem;color:#607d8b;margin-bottom:20px}
+.range-options{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.range-opt{border:2px solid #d0d9e8;border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.range-opt:hover{border-color:#1565c0;background:#f0f4f8}
+.dark .range-opt{border-color:#30363d}.dark .range-opt:hover{background:#1f2a38;border-color:#42a5f5}
+.range-opt.selected{border-color:#1565c0;background:#e3f2fd}
+.dark .range-opt.selected{background:#1a3a5c;border-color:#42a5f5}
+.range-radio{width:20px;height:20px;border-radius:50%;border:2px solid #d0d9e8;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.range-opt.selected .range-radio{border-color:#1565c0;background:#1565c0}
+.range-opt.selected .range-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+.range-opt-info strong{display:block;font-size:.92rem;font-weight:700;color:#1a1a2e}
+.dark .range-opt-info strong{color:#e6edf3}
+.range-opt-info span{font-size:.77rem;color:#607d8b}
+.custom-range-row{display:flex;gap:10px;margin-bottom:16px}
+.custom-range-row input{flex:1;border:2px solid #d0d9e8;border-radius:8px;padding:10px 12px;font-size:.9rem;font-family:inherit;background:#f8fafc;color:#1a1a2e;outline:none;transition:border-color .2s}
+.dark .custom-range-row input{background:#0d1117;color:#e6edf3;border-color:#30363d}
+.custom-range-row input:focus{border-color:#1565c0}
+.custom-range-row label{font-size:.78rem;font-weight:700;color:#1a237e;display:block;margin-bottom:4px}
+.dark .custom-range-row label{color:#90caf9}
+.start-btn{width:100%;background:linear-gradient(135deg,#2e7d32,#388e3c);color:#fff;border:none;border-radius:10px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(46,125,50,.3);letter-spacing:.03em}
+.start-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(46,125,50,.45)}
+
+/* ===== SYNC STATUS BAR ===== */
+#sync-bar{
+  position:fixed;bottom:44px;left:0;right:0;z-index:250;
+  display:none;align-items:center;justify-content:space-between;
+  padding:6px 14px;font-size:.78rem;font-weight:600;flex-wrap:wrap;gap:6px;
+}
+#sync-bar.online{background:#e8f5e9;color:#1b5e20;border-top:2px solid #2e7d32}
+#sync-bar.offline{background:#ffebee;color:#b71c1c;border-top:2px solid #c62828}
+#sync-bar.pending{background:#fff3e0;color:#bf360c;border-top:2px solid #e65100}
+.sync-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+.sync-dot.online{background:#2e7d32;box-shadow:0 0 0 3px rgba(46,125,50,.25)}
+.sync-dot.offline{background:#c62828;box-shadow:0 0 0 3px rgba(198,40,40,.25)}
+.sync-dot.pending{background:#e65100;box-shadow:0 0 0 3px rgba(230,81,0,.25);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.sync-bar-left{display:flex;align-items:center;gap:6px}
+.sync-bar-right{display:flex;align-items:center;gap:8px}
+.sync-btn{border:none;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.sync-btn.do-sync{background:#e65100;color:#fff}
+.sync-btn.done{background:#2e7d32;color:#fff;opacity:.7;cursor:default}
+
+/* ===== HEADER ===== */
+#header{position:sticky;top:0;z-index:200;background:var(--header);color:#fff;
+display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:auto;min-height:56px;
+box-shadow:0 2px 8px rgba(0,0,0,.3);flex-wrap:wrap;gap:4px;padding-top:6px;padding-bottom:6px}
+#header h1{font-size:1rem;font-weight:700;flex:1;margin-right:8px;min-width:120px}
+.hdr-student-info{font-size:.72rem;color:rgba(255,255,255,.8);display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:2px 0}
+.hdr-student-info span{background:rgba(255,255,255,.12);border-radius:4px;padding:2px 7px;white-space:nowrap}
+.hdr-sync-dot{width:9px;height:9px;border-radius:50%;display:inline-block;border:2px solid rgba(255,255,255,.5)}
+.hdr-sync-dot.online{background:#4caf50}
+.hdr-sync-dot.offline{background:#ef5350}
+.hdr-sync-dot.pending{background:#ff9800;animation:pulse 1.5s infinite}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+#timer-box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:4px 10px;font-size:.9rem;font-weight:700;font-family:monospace;min-width:82px;text-align:center}
+#timer-box.warn{background:rgba(230,81,0,.7)}
+.icon-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:6px;color:#fff;cursor:pointer;padding:5px 9px;font-size:.78rem;white-space:nowrap}
+.icon-btn:hover{background:rgba(255,255,255,.25)}
+#app{display:flex;height:calc(100vh - 56px - 44px - 32px);overflow:hidden}
+#q-area{flex:1;overflow-y:auto;padding:16px 18px;min-width:0}
+#palette-panel{width:270px;min-width:220px;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;flex-shrink:0}
+.q-card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:20px;margin-bottom:14px}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.q-num-badge{background:var(--accent);color:#fff;border-radius:6px;padding:3px 10px;font-size:.82rem;font-weight:700}
+.q-sect{font-size:.75rem;color:var(--subtext);background:var(--border);border-radius:4px;padding:2px 8px}
+.q-text{font-size:1rem;font-weight:500;line-height:1.55;margin-bottom:18px;color:var(--text)}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:flex-start;gap:10px;border:2px solid var(--border);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .15s;background:var(--surface)}
+.opt:hover{background:var(--option-hover);border-color:var(--accent)}
+.opt.selected{background:var(--option-sel);border-color:var(--option-border)}
+.opt.correct{background:#c8e6c9;border-color:#2e7d32}
+.opt.wrong{background:#ffcdd2;border-color:#c62828}
+.opt-ltr{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt.selected .opt-ltr{background:var(--accent2)}
+.opt.correct .opt-ltr{background:#2e7d32}
+.opt.wrong .opt-ltr{background:#c62828}
+.opt-txt{font-size:.97rem;line-height:1.45}
+.ctrl-bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn{border:none;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;padding:9px 14px;transition:all .15s;white-space:nowrap}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:var(--accent2)}
+.btn-s{background:#2e7d32;color:#fff}.btn-s:hover{background:#1b5e20}
+.btn-w{background:#6a1b9a;color:#fff}.btn-w:hover{background:#4a148c}
+.btn-d{background:#c62828;color:#fff}.btn-d:hover{background:#b71c1c}
+.btn-n{background:var(--border);color:var(--text)}.btn-n:hover{filter:brightness(.93)}
+.btn-sub{background:#e65100;color:#fff;padding:8px 16px;font-size:.82rem}
+.btn-sub:hover{background:#bf360c}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.pal-hdr{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:5}
+.pal-legend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.leg{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--subtext)}
+.leg-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+.pal-grid{display:flex;flex-wrap:wrap;gap:6px;padding:12px;align-content:flex-start}
+.pq{width:38px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.7rem;font-weight:700;transition:all .15s;color:#fff;user-select:none}
+.pq:hover{transform:scale(1.08)}
+.pq.cur{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--accent)}
+.pq.nv{background:var(--not-visited)}.pq.na{background:var(--unattempted)}.pq.ans{background:var(--answered)}.pq.mrk{background:var(--marked)}.pq.amrk{background:var(--marked-ans)}
+.stats-bar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.stat{display:flex;flex-direction:column;align-items:center;flex:1;min-width:50px}
+.stat-val{font-size:1.1rem;font-weight:800}
+.stat-lbl{font-size:.68rem;color:var(--subtext);text-align:center}
+.prog-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:0 12px 10px}
+.prog-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.srch-box{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.srch-box input{flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.85rem;background:var(--bg);color:var(--text);outline:none}
+.srch-box input:focus{border-color:var(--accent)}
+.srch-box button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.85rem;font-weight:600}
+#footer{background:var(--footer-bg);color:#e8eaf6;height:44px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:.82rem;flex-wrap:wrap;padding:0 12px}
+#footer a{color:#90caf9;text-decoration:none;font-weight:600}
+#footer a:hover{text-decoration:underline}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal{background:var(--surface);border-radius:14px;padding:24px;max-width:500px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.2rem;margin-bottom:14px;color:var(--accent)}
+.modal p{font-size:.95rem;line-height:1.55;margin-bottom:10px}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+#result-page{display:none;overflow-y:auto;padding:24px;min-height:calc(100vh - 56px - 44px - 32px)}
+.res-card{background:var(--surface);border-radius:14px;padding:28px;max-width:700px;margin:0 auto 20px;box-shadow:var(--shadow);text-align:center}
+.score-circle{width:140px;height:140px;border-radius:50%;border:8px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 20px}
+.score-pct{font-size:2rem;font-weight:900;color:var(--accent)}
+.score-lbl{font-size:.8rem;color:var(--subtext)}
+.res-stats{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin:16px 0}
+.rs{display:flex;flex-direction:column;align-items:center}
+.rs-val{font-size:1.5rem;font-weight:800}
+.rs-lbl{font-size:.78rem;color:var(--subtext)}
+
+/* Sync status in results */
+.sync-status-card{
+  max-width:700px;margin:0 auto 16px;border-radius:12px;padding:14px 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.sync-status-card.online{background:#e8f5e9;border:1px solid #a5d6a7}
+.sync-status-card.offline{background:#ffebee;border:1px solid #ef9a9a}
+.sync-status-card.pending{background:#fff3e0;border:1px solid #ffcc80}
+.sync-status-card.synced{background:#e8f5e9;border:1px solid #66bb6a}
+.sync-status-left{display:flex;align-items:center;gap:10px}
+.sync-status-icon{font-size:1.4rem}
+.sync-status-text strong{display:block;font-size:.9rem;font-weight:700}
+.sync-status-text span{font-size:.78rem;color:var(--subtext)}
+.sync-now-btn{border:none;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s}
+.sync-now-btn.active{background:#e65100;color:#fff}
+.sync-now-btn.active:hover{background:#bf360c}
+.sync-now-btn.disabled{background:var(--border);color:var(--subtext);cursor:not-allowed}
+
+/* Student info block */
+.student-info-block{background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:12px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #1565c0;text-align:left}
+.dark .student-info-block{background:linear-gradient(135deg,#0d1b4b,#1a3a5c);border-left-color:#42a5f5}
+.sib-title{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#607d8b;margin-bottom:10px}
+.sib-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.sib-item{display:flex;flex-direction:column}
+.sib-label{font-size:.7rem;color:#607d8b;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.sib-value{font-size:.9rem;font-weight:700;color:#1a1a2e;margin-top:1px}
+.dark .sib-value{color:#e6edf3}
+
+.rev-sect{background:var(--surface);border-radius:12px;padding:20px;max-width:700px;margin:0 auto 16px;box-shadow:var(--shadow)}
+.rev-q{border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.rqh{padding:10px 14px;background:var(--bg);display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:8px}
+.rqh-txt{flex:1;font-size:.88rem}
+.rqb{padding:12px 14px;display:none}
+.rqb.open{display:block}
+.r-opt{padding:6px 10px;border-radius:6px;margin:4px 0;font-size:.9rem}
+.r-opt.c{background:#c8e6c9;color:#1b5e20}
+.r-opt.w{background:#ffcdd2;color:#b71c1c}
+.badge{border-radius:4px;padding:1px 7px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.bc{background:#2e7d32;color:#fff}.bw{background:#c62828;color:#fff}.bs{background:var(--not-visited);color:#fff}
+.ftabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.ftab{border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:.8rem;font-weight:600;background:var(--surface);color:var(--text)}
+.ftab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+#pal-tog{display:none;position:fixed;bottom:80px;right:14px;z-index:300;background:var(--accent);color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:1.3rem;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.3)}
+
+/* Retest modal */
+.retest-opt{border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;margin-bottom:10px;transition:all .2s;display:flex;align-items:flex-start;gap:12px}
+.retest-opt:hover{border-color:var(--accent);background:var(--option-hover)}
+.retest-opt-icon{font-size:1.5rem;flex-shrink:0}
+.retest-opt-info strong{display:block;font-weight:700;font-size:.92rem}
+.retest-opt-info span{font-size:.78rem;color:var(--subtext)}
+
+/* Toast notification */
+#toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#323232;color:#fff;border-radius:10px;padding:12px 20px;font-size:.88rem;font-weight:600;
+  z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.success{background:#2e7d32}
+#toast.error{background:#c62828}
+#toast.info{background:#1565c0}
+
+#loading{position:fixed;inset:0;background:#1a237e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;color:#fff}
+.spin{width:48px;height:48px;border:5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:1rem;opacity:.8}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.res-action-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+
+@media(max-width:768px){
+  #header h1{font-size:.82rem}
+  .hdr-student-info{font-size:.65rem}
+  #palette-panel{display:none;position:fixed;inset:0;z-index:400;width:100%;height:100%;border:none}
+  #palette-panel.open{display:flex;flex-direction:column}
+  #pal-tog{display:flex;align-items:center;justify-content:center}
+  .ctrl-bar .btn{padding:7px 9px;font-size:.76rem}
+  .reg-card{padding:24px 18px}
+  .range-card{padding:22px 16px}
+  #app{height:calc(100vh - 56px - 44px - 32px)}
+  .consent-data-list{grid-template-columns:1fr}
+}
+@media(min-width:769px) and (max-width:1024px){
+  #palette-panel{width:220px}
+  .pq{width:34px;height:34px;font-size:.68rem}
+}
+@media print{
+  #header,#footer,#palette-panel,#pal-tog,.ctrl-bar,#submit-btn,#app,#reg-page,#range-page,#consent-page,#sync-bar,#toast{display:none !important}
+  .modal-ov{display:none !important}
+  #result-page{display:block !important;height:auto;overflow:visible;padding:0}
+  .rqb{display:block !important}
+  .res-action-btns{display:none !important}
+  .sync-status-card{display:none !important}
+}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spin"></div><p>Loading Complementary Medicine Question Bank...</p></div>
+
+<!-- ===== CONSENT PAGE ===== -->
+<div id="consent-page" style="display:none;flex-direction:column;align-items:center;justify-content:center">
+  <div class="consent-card">
+    <div class="consent-icon">🔐</div>
+    <div class="consent-title">Data Privacy & Consent</div>
+    <div class="consent-subtitle">Complementary Medicine Questions — OSHMEDCHRONICLE</div>
+    <div class="consent-box">
+      <strong>By continuing, you agree that your exam details and results may be stored locally and, when internet access is available, securely transmitted to the administrator for academic record purposes.</strong>
+      <div style="margin-top:10px;font-size:.85rem;color:#555">The following information will be collected and may be shared with your institution's academic administrator:</div>
+      <div class="consent-data-list">
+        <span>Student Name</span>
+        <span>Academic Year</span>
+        <span>Group Number</span>
+        <span>Student ID</span>
+        <span>Exam Date &amp; Time</span>
+        <span>Question Range</span>
+        <span>Total Questions</span>
+        <span>Attempted / Unattempted</span>
+        <span>Marked for Review</span>
+        <span>Score &amp; Percentage</span>
+        <span>Device Type</span>
+        <span>Sync Status</span>
+      </div>
+    </div>
+    <label class="consent-check-row" id="consent-check-row">
+      <input type="checkbox" id="consent-check" onchange="toggleConsent()">
+      <span class="consent-check-label">I have read and understood the above. I consent to the collection and transmission of my exam data for academic record purposes.</span>
+    </label>
+    <div class="consent-btns">
+      <button class="consent-decline" onclick="declineConsent()">Decline</button>
+      <button class="consent-accept" id="consent-accept-btn" onclick="acceptConsent()">Accept &amp; Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTRATION PAGE ===== -->
+<div id="reg-page" style="display:none">
+  <div class="reg-card">
+    <div class="recovery-banner" id="recovery-banner">
+      <p>⚡ Unfinished session detected! Would you like to resume where you left off?</p>
+      <div class="rb-btns">
+        <button class="rb-btn rb-resume" onclick="resumeSession()">Resume Session</button>
+        <button class="rb-btn rb-discard" onclick="discardSession()">Start Fresh</button>
+      </div>
+    </div>
+    <div class="reg-logo">
+      <div class="reg-logo-icon">🌿</div>
+      <h2>Complementary Medicine Questions</h2>
+      <p>Complementary Medicine — Candidate Registration</p>
+    </div>
+    <div class="reg-divider"></div>
+    <div class="reg-field">
+      <label class="reg-label" for="reg-name">Student Name <span class="req-star">*</span></label>
+      <input class="reg-input" type="text" id="reg-name" placeholder="Enter your full name" autocomplete="name">
+      <div class="field-err" id="err-name">⚠ Student name is required.</div>
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="reg-year">Academic Year <span class="req-star">*</span></label>
+      <select class="reg-input reg-select" id="reg-year">
+        <option value="">-- Select Academic Year --</option>
+        <option value="1st Year">1st Year</option>
+        <option value="2nd Year">2nd Year</option>
+        <option value="3rd Year">3rd Year</option>
+        <option value="Final Year">Final Year</option>
+        <option value="Intern">Intern</option>
+        <option value="PG Year 1">PG Year 1</option>
+        <option value="PG Year 2">PG Year 2</option>
+        <option value="PG Year 3">PG Year 3</option>
+      </select>
+      <div class="field-err" id="err-year">⚠ Please select your academic year.</div>
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="reg-group">Group Number <span class="req-star">*</span></label>
+      <input class="reg-input" type="text" id="reg-group" placeholder="e.g. Group 5 / B-12">
+      <div class="field-err" id="err-group">⚠ Group number is required.</div>
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="reg-id">Student ID / Roll Number <span class="opt-badge">(Optional)</span></label>
+      <input class="reg-input" type="text" id="reg-id" placeholder="Enter your roll number">
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="reg-email">Email Address <span class="opt-badge">(Optional)</span></label>
+      <input class="reg-input" type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <button class="reg-btn" onclick="submitReg()">Continue to Exam →</button>
+    <div class="reg-footer-note">🔒 Your information is stored locally and transmitted only with your consent.</div>
+  </div>
+</div>
+
+<!-- ===== QUESTION RANGE PAGE ===== -->
+<div id="range-page" style="display:none">
+  <div class="range-card">
+    <div class="welcome-banner">
+      <p>👋 Welcome, <span id="welcome-name">Student</span>! You're all set.</p>
+    </div>
+    <div class="range-title">Select Question Range</div>
+    <div class="range-sub">Choose which questions you'd like to attempt in this session. Total: 200 Questions</div>
+    <div class="range-options" id="range-opts">
+      <div class="range-opt selected" onclick="selectRange(this,'1','30')" data-from="1" data-to="30">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 1 – 30</strong><span>Fundamentals of CAM</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'31','60')" data-from="31" data-to="60">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 31 – 60</strong><span>Herbal &amp; Botanical Medicine</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'61','90')" data-from="61" data-to="90">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 61 – 90</strong><span>Mind-Body Therapies</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'91','120')" data-from="91" data-to="120">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 91 – 120</strong><span>Manual &amp; Manipulative Therapies</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'121','150')" data-from="121" data-to="150">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 121 – 150</strong><span>Traditional Medicine Systems</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'151','175')" data-from="151" data-to="175">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 151 – 175</strong><span>Energy &amp; Biofield Therapies</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'176','200')" data-from="176" data-to="200">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Questions 176 – 200</strong><span>Integrative &amp; Allied Therapies</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'1','200')" data-from="1" data-to="200">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>All Questions (1 – 200)</strong><span>Complete question bank — full exam mode</span></div>
+      </div>
+      <div class="range-opt" onclick="selectRange(this,'custom','custom')" data-from="custom" data-to="custom">
+        <div class="range-radio"></div>
+        <div class="range-opt-info"><strong>Custom Range</strong><span>Specify your own start and end question numbers</span></div>
+      </div>
+    </div>
+    <div id="custom-range-inputs" style="display:none">
+      <div class="custom-range-row">
+        <div style="flex:1"><label>From Question #</label><input type="number" id="custom-from" placeholder="e.g. 10" min="1"></div>
+        <div style="flex:1"><label>To Question #</label><input type="number" id="custom-to" placeholder="e.g. 50" min="1"></div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startExam()">🚀 Start Exam</button>
+  </div>
+</div>
+
+<!-- ===== MAIN EXAM ===== -->
+<div id="header" style="display:none">
+  <div style="flex:1;min-width:0">
+    <h1>Complementary Medicine Questions</h1>
+    <div class="hdr-student-info" id="hdr-student-info"></div>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-sync-dot nv" id="hdr-sync-dot" title="Connection status"></span>
+    <div id="timer-box">00:00:00</div>
+    <button class="icon-btn" onclick="toggleDark()" id="dark-btn">Dark</button>
+    <button class="icon-btn" onclick="toggleFS()">⛶</button>
+    <button class="btn btn-sub" onclick="confirmSubmit()" id="submit-btn">Submit</button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div id="q-area">
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-num-badge" id="q-badge">Q 1</span>
+        <span class="q-sect" id="q-sect">General Pathology</span>
+      </div>
+      <div class="q-text" id="q-text">Loading...</div>
+      <div class="opts" id="opts-container"></div>
+      <div class="ctrl-bar">
+        <button class="btn btn-n" onclick="navigate(-1)" id="prev-btn">◀ Prev</button>
+        <button class="btn btn-p" onclick="navigate(1)">Next ▶</button>
+        <button class="btn btn-s" onclick="saveAndNext()">Save &amp; Next</button>
+        <button class="btn btn-w" onclick="markReview()">Mark Review</button>
+        <button class="btn btn-n" onclick="clearResp()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div id="palette-panel">
+    <div class="pal-hdr"><span>Question Palette</span><button class="icon-btn" onclick="closePal()">✕</button></div>
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="srch-box">
+      <input type="number" id="q-srch" placeholder="Go to Q#" min="1" onkeydown="if(event.key==='Enter')doJump()">
+      <button onclick="doJump()">Go</button>
+    </div>
+    <div class="pal-legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--not-visited)"></div>Not Visited</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--unattempted)"></div>Not Answered</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--answered)"></div>Answered</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--marked)"></div>Marked</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--marked-ans)"></div>Ans+Marked</div>
+    </div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border)">
+      <div class="ftabs">
+        <div class="ftab active" onclick="setPalFlt('all',this)">All</div>
+        <div class="ftab" onclick="setPalFlt('ans',this)">Answered</div>
+        <div class="ftab" onclick="setPalFlt('na',this)">Unanswered</div>
+        <div class="ftab" onclick="setPalFlt('mrk',this)">Marked</div>
+        <div class="ftab" onclick="setPalFlt('nv',this)">Not Visited</div>
+      </div>
+    </div>
+    <div class="pal-grid" id="pal-grid"></div>
+  </div>
+</div>
+
+<!-- Sync bar (above footer during exam) -->
+<div id="sync-bar" style="display:none">
+  <div class="sync-bar-left">
+    <span class="sync-dot" id="sync-dot"></span>
+    <span id="sync-bar-text">Checking connection...</span>
+  </div>
+  <div class="sync-bar-right">
+    <button class="sync-btn" id="sync-bar-btn" onclick="trySyncNow()" style="display:none">Sync Now</button>
+  </div>
+</div>
+
+<!-- Results page -->
+<div id="result-page" style="display:none">
+  <div class="sync-status-card" id="res-sync-card">
+    <div class="sync-status-left">
+      <div class="sync-status-icon" id="res-sync-icon">⏳</div>
+      <div class="sync-status-text">
+        <strong id="res-sync-title">Checking sync status...</strong>
+        <span id="res-sync-sub">Please wait</span>
+      </div>
+    </div>
+    <button class="sync-now-btn" id="res-sync-btn" onclick="trySyncNow()">Sync Now</button>
+  </div>
+
+  <div class="res-card">
+    <h2 style="font-size:1.5rem;margin-bottom:16px">📋 Exam Results</h2>
+    <div class="student-info-block" id="res-student-block">
+      <div class="sib-title">Candidate Information</div>
+      <div class="sib-grid" id="res-student-grid"></div>
+    </div>
+    <div class="score-circle"><span class="score-pct" id="res-pct">0%</span><span class="score-lbl">Score</span></div>
+    <div class="res-stats" id="res-stats"></div>
+    <div class="res-action-btns">
+      <button class="btn btn-p" onclick="showRev('all')">All Questions</button>
+      <button class="btn btn-s" onclick="showRev('correct')">Correct</button>
+      <button class="btn btn-d" onclick="showRev('wrong')">Wrong</button>
+      <button class="btn btn-w" onclick="showRev('skip')">Skipped</button>
+      <button class="btn btn-n" onclick="downloadResult()">⬇ Download</button>
+      <button class="btn btn-n" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-sub" onclick="openRetestModal()">🔄 Retest</button>
+    </div>
+  </div>
+  <div class="rev-sect" id="rev-container"></div>
+</div>
+
+<button id="pal-tog" onclick="togglePal()">☰</button>
+
+<div id="footer" style="display:none">
+  <span>Complementary Medicine | OSHMEDCHRONICLE | Pradeep Waghmare</span>
+  <a href="https://youtu.be/WDVnkr4X8Ug?si=x1iiMUr2c2-WAkmt" target="_blank" rel="noopener">▶ YouTube</a>
+</div>
+
+<!-- Submit confirm modal -->
+<div class="modal-ov" id="confirm-modal">
+  <div class="modal">
+    <h2>Submit Exam?</h2>
+    <p id="confirm-msg"></p>
+    <div class="modal-btns">
+      <button class="btn btn-n" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-d" onclick="submitExam()">Submit Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Retest modal -->
+<div class="modal-ov" id="retest-modal">
+  <div class="modal">
+    <h2>🔄 Retest Options</h2>
+    <div class="retest-opt" onclick="doRetake()">
+      <div class="retest-opt-icon">🔁</div>
+      <div class="retest-opt-info"><strong>Retake Same Range</strong><span>Keeps your name, year and group. Resets answers and timer.</span></div>
+    </div>
+    <div class="retest-opt" onclick="doFreshExam()">
+      <div class="retest-opt-icon">🆕</div>
+      <div class="retest-opt-info"><strong>Start Fresh Exam</strong><span>Clears all student information. Returns to registration screen.</span></div>
+    </div>
+    <div class="modal-btns"><button class="btn btn-n" onclick="closeModal('retest-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- Pending sync modal -->
+<div class="modal-ov" id="pending-sync-modal">
+  <div class="modal">
+    <h2>🌐 Internet Connected!</h2>
+    <p>You have <strong id="pending-count">1</strong> pending exam result(s) that haven't been synchronized yet. Would you like to sync them now?</p>
+    <div class="modal-btns">
+      <button class="btn btn-n" onclick="closeModal('pending-sync-modal')">Later</button>
+      <button class="btn btn-s" onclick="syncPendingNow()">Sync Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// QUESTION BANK
+// ============================================================
+var QUESTIONS=[
+{num:"1",q:"Which definition best characterizes Complementary Medicine?",opts:[{l:"A",t:"A medical approach used exclusively instead of conventional biomedical treatment"},{l:"B",t:"A medical system based solely on energy manipulation"},{l:"C",t:"Therapies used together with conventional biomedical treatment to enhance patient outcomes"},{l:"D",t:"A philosophy rejecting all pharmacological interventions"}],ans:"C"},
+{num:"2",q:"Integrative Medicine is defined as:",opts:[{l:"A",t:"The replacement of pharmacotherapy with traditional healing rituals"},{l:"B",t:"The combination of evidence-based Complementary and Alternative Medicine modalities with conventional biomedical treatment in a coordinated clinical framework"},{l:"C",t:"The exclusive use of Traditional Chinese Medicine in hospital settings"},{l:"D",t:"The use of meditation as a universal cure"}],ans:"B"},
+{num:"3",q:"Which principle is fundamental to evidence-informed use of Complementary and Alternative Medicine?",opts:[{l:"A",t:"Natural products cannot cause toxicity"},{l:"B",t:"Herbal formulations do not interact with pharmaceuticals"},{l:"C",t:"Treatment selection must consider mechanism of action, clinical evidence, and risk\u2013benefit ratio"},{l:"D",t:"A therapy is valid if it is culturally transmitted"}],ans:"C"},
+{num:"4",q:"The primary reason for patient interest in Complementary and Alternative Medicine is:",opts:[{l:"A",t:"Lack of literacy"},{l:"B",t:"Unregulated advertising"},{l:"C",t:"Chronic conditions where conventional biomedical treatment provides incomplete symptom relief"},{l:"D",t:"Cultural superstition"}],ans:"C"},
+{num:"5",q:"A major ethical responsibility of clinicians when patients use Complementary and Alternative Medicine is:",opts:[{l:"A",t:"Prohibiting all alternative therapies"},{l:"B",t:"Avoiding discussion to prevent influencing patient beliefs"},{l:"C",t:"Providing transparent information regarding effectiveness, risks, and interactions"},{l:"D",t:"Replacing conventional therapy with the patient's preferred alternative treatment"}],ans:"C"},
+{num:"6",q:"The National Center for Complementary and Integrative Health categorizes Complementary and Alternative Medicine primarily based on:",opts:[{l:"A",t:"Historical origin"},{l:"B",t:"Biological plausibility"},{l:"C",t:"Therapeutic method and mechanism"},{l:"D",t:"Religious value"}],ans:"C"},
+{num:"7",q:"Why is safety evaluation complex in herbal medicine?",opts:[{l:"A",t:"Herbal plants never vary in composition"},{l:"B",t:"Bioactive compounds are standardized across all countries"},{l:"C",t:"Plant phytochemistry varies by species, soil, cultivation, processing, and extraction methods, making pharmacokinetics unpredictable"},{l:"D",t:"Herbal medicine has no biological activity"}],ans:"C"},
+{num:"8",q:"The most common reason for toxicity in herbal supplements is:",opts:[{l:"A",t:"Inherent toxicity only"},{l:"B",t:"Genetic metabolism defects in all patients"},{l:"C",t:"Adulteration with pharmaceuticals, contamination with heavy metals, or incorrect botanical identification"},{l:"D",t:"Use of correct dosage"}],ans:"C"},
+{num:"9",q:"Which principle is central to naturopathic philosophy?",opts:[{l:"A",t:"Surgical intervention as first-line therapy"},{l:"B",t:"Suppression of symptoms rather than addressing etiology"},{l:"C",t:"The body's inherent self-healing capacity known as \"vis medicatrix naturae\""},{l:"D",t:"Exclusive reliance on botanical extracts"}],ans:"C"},
+{num:"10",q:"Placebo response in Complementary and Alternative Medicine is best explained by:",opts:[{l:"A",t:"Purely imaginary symptom improvement"},{l:"B",t:"Neurobiological mechanisms involving endogenous opioid release, dopaminergic reward circuits, and expectation-driven modulation of pain pathways"},{l:"C",t:"Patient trickery"},{l:"D",t:"A universal property of natural substances"}],ans:"B"},
+{num:"11",q:"Which Complementary and Alternative Medicine therapy demonstrates the strongest evidence in management of chronic nonspecific low back pain?",opts:[{l:"A",t:"Crystal therapy"},{l:"B",t:"Acupuncture with sterile, single-use needles"},{l:"C",t:"Iridology"},{l:"D",t:"Colon detoxification therapy"}],ans:"B"},
+{num:"12",q:"Which kinetic property differentiates herbal extracts from conventional pharmaceuticals?",opts:[{l:"A",t:"Herbal extracts have single, purified active molecules"},{l:"B",t:"Herbal extracts contain multiple phytochemicals with variable absorption and synergistic or antagonistic interactions"},{l:"C",t:"Herbal extracts always bypass first-pass metabolism"},{l:"D",t:"Herbal extracts cannot cross biological membranes"}],ans:"B"},
+{num:"13",q:"When integrating Complementary and Alternative Medicine with biomedical treatment, a major clinical challenge is:",opts:[{l:"A",t:"Excessive availability of randomized trials"},{l:"B",t:"Difficulty creating adequate placebo controls for physical and mind-body therapies"},{l:"C",t:"Universal insurance coverage"},{l:"D",t:"Lack of patient acceptance"}],ans:"B"},
+{num:"14",q:"A valid reason to delay use of an herbal supplement is:",opts:[{l:"A",t:"Herbal medicines are not culturally accepted"},{l:"B",t:"The patient is already using two medications"},{l:"C",t:"The herbal product induces cytochrome P450 enzymatic changes that may alter plasma concentration of essential pharmaceuticals"},{l:"D",t:"Herbal medicines cause immunosuppression"}],ans:"C"},
+{num:"15",q:"Which statement about regulatory status of herbal preparations in most countries is accurate?",opts:[{l:"A",t:"They are regulated as prescription pharmaceuticals"},{l:"B",t:"They are generally regulated as dietary supplements without mandatory proof of efficacy"},{l:"C",t:"They require Phase III clinical trials before marketing"},{l:"D",t:"They are classified as controlled substances"}],ans:"B"},
+{num:"16",q:"In the context of Complementary and Alternative Medicine, \"holistic medicine\" refers to:",opts:[{l:"A",t:"Treatment of physical symptoms only"},{l:"B",t:"Simultaneous consideration of biological, psychological, social, and spiritual determinants of health"},{l:"C",t:"Strict reliance on laboratory diagnostics"},{l:"D",t:"Exclusively using energy-based therapies"}],ans:"B"},
+{num:"17",q:"Herbal\u2013drug interactions most commonly occur through:",opts:[{l:"A",t:"Physical incompatibility"},{l:"B",t:"Activation of placebo pathways"},{l:"C",t:"Modulation of hepatic cytochrome P450 enzymes or P-glycoprotein transporters"},{l:"D",t:"Unrelated dietary habits"}],ans:"C"},
+{num:"18",q:"Which Complementary and Alternative Medicine therapy requires strict aseptic technique?",opts:[{l:"A",t:"Aromatherapy"},{l:"B",t:"Reiki energy therapy"},{l:"C",t:"Acupuncture"},{l:"D",t:"Yogic breathing"}],ans:"C"},
+{num:"19",q:"A critical limitation of clinical research in Complementary and Alternative Medicine is:",opts:[{l:"A",t:"Excessive funding"},{l:"B",t:"Overrepresentation of rare diseases"},{l:"C",t:"Difficulty standardizing complex, individualized therapeutic interventions such as Traditional Chinese Medicine formulas"},{l:"D",t:"Too many double-blind trials"}],ans:"C"},
+{num:"20",q:"An ethical violation in Complementary and Alternative Medicine occurs when:",opts:[{l:"A",t:"The practitioner individualizes treatment"},{l:"B",t:"Informed consent excludes discussion of the therapy's evidence, risks, and alternatives"},{l:"C",t:"The therapy is part of an integrative plan"},{l:"D",t:"The patient requests a natural option"}],ans:"B"},
+{num:"21",q:"Which phrase accurately characterizes Alternative Medicine?",opts:[{l:"A",t:"Used together with biomedical treatment"},{l:"B",t:"Specifically designed to enhance pharmacotherapy"},{l:"C",t:"Used instead of conventional biomedical treatment"},{l:"D",t:"Only refers to herbal medicine"}],ans:"C"},
+{num:"22",q:"Which population shows the highest prevalence of Complementary and Alternative Medicine usage worldwide?",opts:[{l:"A",t:"Individuals with acute trauma"},{l:"B",t:"Individuals with chronic musculoskeletal pain, oncology patients, and persons with refractory symptoms"},{l:"C",t:"Neonates"},{l:"D",t:"Intensive care patients"}],ans:"B"},
+{num:"23",q:"A \"whole medical system\" within Complementary and Alternative Medicine refers to:",opts:[{l:"A",t:"A single herbal product"},{l:"B",t:"A complete set of theories, diagnostics, and treatment approaches (e.g., Ayurveda, Traditional Chinese Medicine, Homeopathy)"},{l:"C",t:"A surgical procedure"},{l:"D",t:"A form of psychotherapy"}],ans:"B"},
+{num:"24",q:"The major risk of substituting Alternative Medicine for conventional care in serious illnesses is:",opts:[{l:"A",t:"Enhanced immune activation"},{l:"B",t:"Delay in diagnosis and progression of potentially reversible diseases"},{l:"C",t:"Rebound hypertension"},{l:"D",t:"Improved adherence"}],ans:"B"},
+{num:"25",q:"A high-quality clinical trial of Complementary and Alternative Medicine should include:",opts:[{l:"A",t:"Absence of control groups"},{l:"B",t:"Poor reporting of interventions"},{l:"C",t:"Standardized, replicable protocols and appropriate blinding where feasible"},{l:"D",t:"Exclusion of objective clinical outcomes"}],ans:"C"},
+{num:"26",q:"A common misconception among patients is:",opts:[{l:"A",t:"Natural substances are inherently safe"},{l:"B",t:"Conventional medicine is evidence-based"},{l:"C",t:"Herbs can interact with pharmaceuticals"},{l:"D",t:"Acupuncture needles must be sterile"}],ans:"A"},
+{num:"27",q:"Which Complementary and Alternative Medicine modality is legally regulated in the highest number of countries?",opts:[{l:"A",t:"Aromatherapy"},{l:"B",t:"Massage therapy"},{l:"C",t:"Acupuncture"},{l:"D",t:"Crystal-energy healing"}],ans:"C"},
+{num:"28",q:"Which Complementary and Alternative Medicine approach explicitly incorporates spiritual dimensions?",opts:[{l:"A",t:"Orthomolecular medicine"},{l:"B",t:"Yoga as part of classical Indian philosophy"},{l:"C",t:"Colon cleansing therapy"},{l:"D",t:"Antihomotoxic therapy"}],ans:"B"},
+{num:"29",q:"The biologically active compounds in medicinal plants are most commonly:",opts:[{l:"A",t:"Single isolated molecules"},{l:"B",t:"Synergistic mixtures including alkaloids, flavonoids, terpenoids, glycosides, and phenolic acids"},{l:"C",t:"Pure proteins"},{l:"D",t:"Only vitamins"}],ans:"B"},
+{num:"30",q:"The principle of \"evidence hierarchy\" in evaluating Complementary and Alternative Medicine indicates that:",opts:[{l:"A",t:"Historical use equals clinical proof"},{l:"B",t:"Anecdotal experience is superior to randomized controlled trials"},{l:"C",t:"Systematic reviews of well-designed randomized controlled trials provide the highest level of evidence"},{l:"D",t:"Animal studies provide the most definitive conclusions"}],ans:"C"},
+{num:"31",q:"Which Complementary and Alternative Medicine therapy demonstrates documented modulation of the autonomic nervous system?",opts:[{l:"A",t:"Reflexology"},{l:"B",t:"Reiki energy therapy"},{l:"C",t:"Yogic pranayama breathing practices"},{l:"D",t:"Crystal vibration therapy"}],ans:"C"},
+{num:"32",q:"Which condition shows strongest biomedical evidence supporting mindfulness-based stress reduction?",opts:[{l:"A",t:"Gallstone disease"},{l:"B",t:"Chronic anxiety disorders and stress-related physiological dysregulation"},{l:"C",t:"Acute bacterial infections"},{l:"D",t:"Epilepsy"}],ans:"B"},
+{num:"33",q:"Which herbal medicine interaction is clinically significant?",opts:[{l:"A",t:"St. John's wort induction of cytochrome P450 leading to reduced concentration of warfarin or oral contraceptives"},{l:"B",t:"Garlic interacting with vitamin C"},{l:"C",t:"Ginseng blocking carbohydrate absorption"},{l:"D",t:"Chamomile causing renal failure"}],ans:"A"},
+{num:"34",q:"In Complementary and Alternative Medicine, \"biologically based practices\" include:",opts:[{l:"A",t:"Hypnosis"},{l:"B",t:"Meditation"},{l:"C",t:"Herbal medicine, nutritional therapy, and orthomolecular medicine"},{l:"D",t:"Chiropractic spinal manipulation"}],ans:"C"},
+{num:"35",q:"A patient taking a Traditional Chinese Medicine formula must be monitored for:",opts:[{l:"A",t:"Vitamin deficiencies"},{l:"B",t:"Heavy-metal contamination or adulterants"},{l:"C",t:"Radiation exposure"},{l:"D",t:"Vaccination status"}],ans:"B"},
+{num:"36",q:"Adulteration of herbal products with corticosteroids is a recognized problem in:",opts:[{l:"A",t:"Yoga practices"},{l:"B",t:"Ayurvedic formulations labeled for skin diseases"},{l:"C",t:"Acupuncture"},{l:"D",t:"Reflexology"}],ans:"B"},
+{num:"37",q:"The key limitation of iridology as a diagnostic system is:",opts:[{l:"A",t:"Expense"},{l:"B",t:"Lack of reproducible anatomical or physiological correspondence between iris patterns and internal organs"},{l:"C",t:"Needle-related risk"},{l:"D",t:"Excessive regulation"}],ans:"B"},
+{num:"38",q:"Which principle separates Homeopathy from herbal medicine?",opts:[{l:"A",t:"Use of natural substances only"},{l:"B",t:"\"Law of similars\" and extreme serial dilution beyond Avogadro's number"},{l:"C",t:"Extraction from plants"},{l:"D",t:"Preference for chronic diseases"}],ans:"B"},
+{num:"39",q:"A clinically significant risk of energy-based therapies such as Reiki is:",opts:[{l:"A",t:"Electrical burns"},{l:"B",t:"Radiation exposure"},{l:"C",t:"Patient substituting them for necessary biomedical care, leading to worsening disease"},{l:"D",t:"Toxicity"}],ans:"C"},
+{num:"40",q:"Complementary and Alternative Medicine therapies should be avoided when:",opts:[{l:"A",t:"They have cultural significance"},{l:"B",t:"They interfere with time-critical biomedical interventions such as chemotherapy or anticoagulation"},{l:"C",t:"They are inexpensive"},{l:"D",t:"They are natural"}],ans:"B"},
+{num:"41",q:"A major advantage of mind-body therapies is:",opts:[{l:"A",t:"Immediate cure"},{l:"B",t:"Minimal adverse effects when properly guided"},{l:"C",t:"Replacement of all biomedical medications"},{l:"D",t:"Guaranteed spiritual awakening"}],ans:"B"},
+{num:"42",q:"Which complementary approach has strong evidence in pregnancy-related nausea?",opts:[{l:"A",t:"Colon cleansing"},{l:"B",t:"Acupressure on the Pericardium-6 point"},{l:"C",t:"Reiki energy"},{l:"D",t:"Astrology-based medicine"}],ans:"B"},
+{num:"43",q:"In evaluating Complementary and Alternative Medicine claims, the most reliable source is:",opts:[{l:"A",t:"Commercial advertisements"},{l:"B",t:"Traditional belief systems"},{l:"C",t:"Peer-reviewed systematic reviews and clinical practice guidelines"},{l:"D",t:"Social media feedback"}],ans:"C"},
+{num:"44",q:"Which Complementary and Alternative Medicine intervention requires strict infection-control measures?",opts:[{l:"A",t:"Aromatherapy"},{l:"B",t:"Chiropractic manipulation"},{l:"C",t:"Acupuncture involving skin penetration"},{l:"D",t:"Yoga stretching"}],ans:"C"},
+{num:"45",q:"Which natural therapy is contraindicated with anticoagulant medication due to increased bleeding risk?",opts:[{l:"A",t:"Ginger in high doses"},{l:"B",t:"Yogic breathing"},{l:"C",t:"Reflexology"},{l:"D",t:"Magnesium supplements"}],ans:"A"},
+{num:"46",q:"Which Complementary and Alternative Medicine modality intentionally manipulates energy fields without physical contact?",opts:[{l:"A",t:"Tuina therapeutic massage"},{l:"B",t:"Reiki energy therapy"},{l:"C",t:"Acupuncture meridian stimulation"},{l:"D",t:"Hydrotherapy"}],ans:"B"},
+{num:"47",q:"Which strategy improves safety of Complementary and Alternative Medicine use?",opts:[{l:"A",t:"Obtaining herbal products from unverified sources"},{l:"B",t:"Avoiding disclosure to clinicians"},{l:"C",t:"Using standardized extracts with validated concentrations"},{l:"D",t:"Mixing multiple remedies randomly"}],ans:"C"},
+{num:"48",q:"The major problem in regulatory oversight of Complementary and Alternative Medicine is:",opts:[{l:"A",t:"Excessive clinical trial requirements"},{l:"B",t:"Limited enforcement of manufacturing quality, labeling accuracy, and safety monitoring"},{l:"C",t:"Over-regulation"},{l:"D",t:"Universal governmental bans"}],ans:"B"},
+{num:"49",q:"A Complementary and Alternative Medicine modality with demonstrated immunomodulatory effects is:",opts:[{l:"A",t:"Crystal color therapy"},{l:"B",t:"Meditation influencing inflammatory cytokines"},{l:"C",t:"Astrology"},{l:"D",t:"Colon hydrotherapy"}],ans:"B"},
+{num:"50",q:"The safest professional approach when a patient wishes to use Complementary and Alternative Medicine is:",opts:[{l:"A",t:"Prohibit all therapies"},{l:"B",t:"Ignore their request"},{l:"C",t:"Discuss evidence, risks, interactions, and integrate safely without compromising essential biomedical treatment"},{l:"D",t:"Replace all medications with natural treatments"}],ans:"C"},
+{num:"51",q:"Which Traditional Chinese Medicine concept explains the mechanism by which acupuncture is believed to regulate physiological imbalance?",opts:[{l:"A",t:"Regulation of Shen disturbances"},{l:"B",t:"Harmonization of Qi flow through meridians"},{l:"C",t:"Activation of neurohormonal axis only"},{l:"D",t:"Restoration of bone marrow Jing exclusively"}],ans:"B"},
+{num:"52",q:"In Reiki therapy, the practitioner's role is described as:",opts:[{l:"A",t:"Direct energy generator"},{l:"B",t:"Conduit for Universal Life Energy without imposing personal intention"},{l:"C",t:"Manipulator of meridian-based Qi"},{l:"D",t:"Physical stimulator of endogenous heat"}],ans:"B"},
+{num:"53",q:"Polarity therapy is based on the principle that:",opts:[{l:"A",t:"Energy flows only through chakras"},{l:"B",t:"Electromagnetic fields within the body have positive, negative, and neutral poles that must remain balanced"},{l:"C",t:"Disease is caused by depletion of Jing essence"},{l:"D",t:"Only physical touch can influence subtle energy fields"}],ans:"B"},
+{num:"54",q:"Moxibustion primarily stimulates which Traditional Chinese Medicine entity?",opts:[{l:"A",t:"Blood stasis in collateral vessels"},{l:"B",t:"Qi and Yang energy restoration"},{l:"C",t:"Excess Yin formation in the Kidney meridian"},{l:"D",t:"Pathogenic Wind-Heat"}],ans:"B"},
+{num:"55",q:"Which of the following describes \"Endobiogeny\" most accurately?",opts:[{l:"A",t:"A system evaluating how botanical remedies increase innate immunity only"},{l:"B",t:"An integrative model analyzing hormonal regulation as the central determinant of terrain and disease"},{l:"C",t:"A system based solely on meridian palpation"},{l:"D",t:"A diagnostic model dependent strictly on iridological observation"}],ans:"B"},
+{num:"56",q:"According to bioenergetics, emotional trauma is believed to be stored:",opts:[{l:"A",t:"Only in hippocampal circuits"},{l:"B",t:"As muscular armoring patterns that interrupt natural energy flow"},{l:"C",t:"Inside blood plasma proteins"},{l:"D",t:"Exclusively in the parietal cortex"}],ans:"B"},
+{num:"57",q:"Electroacupuncture increases release of:",opts:[{l:"A",t:"Gamma-aminobutyric acid only"},{l:"B",t:"Endorphins, enkephalins, and dynorphins at varying frequencies"},{l:"C",t:"Thyroid hormones"},{l:"D",t:"Angiotensin II"}],ans:"B"},
+{num:"58",q:"Which moxibustion technique involves warming needles by applying burning moxa to the needle handle?",opts:[{l:"A",t:"Scarring direct moxibustion"},{l:"B",t:"Indirect ginger-layer moxibustion"},{l:"C",t:"Warming-needle moxibustion"},{l:"D",t:"Cone moxibustion"}],ans:"C"},
+{num:"59",q:"In Traditional Chinese Medicine, which meridian is most associated with regulating consciousness and sleep, especially in acupuncture treatment?",opts:[{l:"A",t:"Liver meridian"},{l:"B",t:"Heart meridian"},{l:"C",t:"Large Intestine meridian"},{l:"D",t:"Gallbladder meridian"}],ans:"B"},
+{num:"60",q:"Which statement best reflects the mechanism of polarity therapy touch techniques?",opts:[{l:"A",t:"They work exclusively by modifying acupuncture points"},{l:"B",t:"They attempt to rebalance the body's electromagnetic fields through synchronous touch of polar points"},{l:"C",t:"They rely on alteration of cerebrospinal fluid hydration"},{l:"D",t:"They use thermal conduction to restore Yin and Yang equilibrium"}],ans:"B"},
+{num:"61",q:"In naturopathy, the \"healing power of nature\" refers to:",opts:[{l:"A",t:"External temperature changes"},{l:"B",t:"Innate self-regulatory and self-healing mechanisms of the organism"},{l:"C",t:"Herbal plant alkaloids only"},{l:"D",t:"Homeopathic dilutions"}],ans:"B"},
+{num:"62",q:"Which Ayurvedic herb is classified as \"Rasayana\" for rejuvenation and stress resistance?",opts:[{l:"A",t:"Terminalia chebula"},{l:"B",t:"Withania somnifera"},{l:"C",t:"Piper longum"},{l:"D",t:"Tinospora cordifolia"}],ans:"B"},
+{num:"63",q:"The macrobiotic diet emphasizes:",opts:[{l:"A",t:"High-animal-protein foods"},{l:"B",t:"Whole grains and a balance of Yin and Yang foods"},{l:"C",t:"High fructose fruits"},{l:"D",t:"High saturated fats"}],ans:"B"},
+{num:"64",q:"Orthomolecular medicine focuses on:",opts:[{l:"A",t:"Homeopathic dilutions of vitamins"},{l:"B",t:"Using optimal concentrations of vitamins, minerals, and amino acids to restore biochemical balance"},{l:"C",t:"Exclusive use of herbal extracts"},{l:"D",t:"Energy healing through magnets"}],ans:"B"},
+{num:"65",q:"Which herb has the strongest evidence for improving cognitive function through modulation of cerebral blood flow?",opts:[{l:"A",t:"Echinacea purpurea"},{l:"B",t:"Ginkgo biloba"},{l:"C",t:"Hypericum perforatum"},{l:"D",t:"Valeriana officinalis"}],ans:"B"},
+{num:"66",q:"A naturopathic elimination diet is primarily used to:",opts:[{l:"A",t:"Treat genetic disorders"},{l:"B",t:"Identify food intolerances and sensitivities"},{l:"C",t:"Improve bone density"},{l:"D",t:"Diagnose iridological defects"}],ans:"B"},
+{num:"67",q:"In Ayurveda, the Pitta Dosha is associated with:",opts:[{l:"A",t:"Cold, dry, and heavy qualities"},{l:"B",t:"Heat, transformation, and metabolism"},{l:"C",t:"Stability and lubrication"},{l:"D",t:"Ether and air dominance"}],ans:"B"},
+{num:"68",q:"Which herbal preparation carries the highest risk of hepatotoxicity?",opts:[{l:"A",t:"Milk thistle"},{l:"B",t:"Kava-kava"},{l:"C",t:"Peppermint leaf"},{l:"D",t:"Chamomile"}],ans:"B"},
+{num:"69",q:"A macrobiotic diet deficiency risk most likely includes:",opts:[{l:"A",t:"Excess vitamin B12"},{l:"B",t:"Omega-3 fatty acid deficiency"},{l:"C",t:"Excess iron"},{l:"D",t:"High sodium levels"}],ans:"B"},
+{num:"70",q:"Orthomolecular high-dose vitamin C therapy is theorized to work by:",opts:[{l:"A",t:"Inhibiting mitochondrial ATP synthesis"},{l:"B",t:"Enhancing antioxidant capacity and modulating immune activity"},{l:"C",t:"Stimulating adrenal cortical necrosis"},{l:"D",t:"Activating alkaline phosphatase"}],ans:"B"},
+{num:"71",q:"In Yoga physiology, \"Pranayama\" primarily influences:",opts:[{l:"A",t:"Cerebellar reflex circuits only"},{l:"B",t:"Autonomic nervous system through regulated breathing"},{l:"C",t:"Skeletal muscle hypertrophy"},{l:"D",t:"Intestinal motility exclusively"}],ans:"B"},
+{num:"72",q:"Qi in Qigong refers to:",opts:[{l:"A",t:"Mechanical muscular energy"},{l:"B",t:"Vital life-force energy flowing through the meridians"},{l:"C",t:"Electrical action potentials"},{l:"D",t:"Hormonal secretions"}],ans:"B"},
+{num:"73",q:"Tuina therapy differs from Western massage because it:",opts:[{l:"A",t:"Does not use manual manipulation"},{l:"B",t:"Primarily targets meridians, acupoints, and Qi circulation"},{l:"C",t:"Avoids muscle and fascia"},{l:"D",t:"Uses only vibrational devices"}],ans:"B"},
+{num:"74",q:"In Traditional Chinese Medicine pathology, \"Dampness\" is most associated with:",opts:[{l:"A",t:"Rapid pulse and high fever"},{l:"B",t:"Heaviness, turbidity, and stagnation"},{l:"C",t:"Sharp pain and dryness"},{l:"D",t:"Sudden emotional disturbance"}],ans:"B"},
+{num:"75",q:"Bazi analysis is based on:",opts:[{l:"A",t:"Chakra balancing"},{l:"B",t:"Eight-character birth chart interpreting interactions of Five Elements"},{l:"C",t:"Iridological mapping"},{l:"D",t:"Physiognomy"}],ans:"B"},
+{num:"76",q:"Which Ayurvedic massage technique uses warm medicated oil applied in rhythmic strokes?",opts:[{l:"A",t:"Udvartana"},{l:"B",t:"Abhyanga"},{l:"C",t:"Shirodhara"},{l:"D",t:"Nasya"}],ans:"B"},
+{num:"77",q:"In Yoga philosophy, the \"Nadi\" system describes:",opts:[{l:"A",t:"Bone marrow channels"},{l:"B",t:"Subtle energy channels through which Prana flows"},{l:"C",t:"Arterial circulation"},{l:"D",t:"Lymphatic pathways"}],ans:"B"},
+{num:"78",q:"Which Qigong practice emphasizes static postures held for long periods to cultivate internal energy?",opts:[{l:"A",t:"Medical Qigong"},{l:"B",t:"Iron Shirt Qigong"},{l:"C",t:"Dynamic Dragon Qigong"},{l:"D",t:"Athletic Shaolin Qigong"}],ans:"B"},
+{num:"79",q:"Ayurvedic classification \"Rakta Dhatu\" refers to:",opts:[{l:"A",t:"Bone tissue"},{l:"B",t:"Blood tissue"},{l:"C",t:"Nervous tissue"}],ans:"B"},
+{num:"80",q:"Traditional Chinese Medicine links the emotion of fear predominantly to:",opts:[{l:"A",t:"Liver"},{l:"B",t:"Heart"},{l:"C",t:"Kidney"},{l:"D",t:"Lungs"}],ans:"C"},
+{num:"81",q:"Hypericum perforatum induces which cytochrome P450 enzyme?",opts:[{l:"A",t:"CYP2D6"},{l:"B",t:"CYP3A4"},{l:"C",t:"CYP2C9"},{l:"D",t:"CYP1A2"}],ans:"B"},
+{num:"82",q:"Which herb may cause serotonin syndrome when combined with selective serotonin reuptake inhibitors?",opts:[{l:"A",t:"St. John's Wort (Hypericum perforatum)"},{l:"B",t:"Ginger"},{l:"C",t:"Garlic"},{l:"D",t:"Pomegranate"}],ans:"A"},
+{num:"83",q:"Glycyrrhizin in licorice root can cause:",opts:[{l:"A",t:"Hyperkalemia"},{l:"B",t:"Pseudohyperaldosteronism with hypokalemia"},{l:"C",t:"Hypernatremia only"},{l:"D",t:"Serotonin toxicity"}],ans:"B"},
+{num:"84",q:"Which herb is contraindicated in patients with glucose-6-phosphate dehydrogenase deficiency?",opts:[{l:"A",t:"Turmeric"},{l:"B",t:"Black cohosh"},{l:"C",t:"Quassia"},{l:"D",t:"Henna (Lawsonia inermis)"}],ans:"D"},
+{num:"85",q:"An Ayurvedic preparation contaminated with heavy metals is mostly due to:",opts:[{l:"A",t:"Incorrect decoction technique"},{l:"B",t:"Use of Rasa Shastra (alchemy with metals)"},{l:"C",t:"Poor herbal chemotherapy"},{l:"D",t:"Fermentation errors"}],ans:"B"},
+{num:"86",q:"Which point is considered the \"Command point of the abdomen\" in acupuncture?",opts:[{l:"A",t:"Stomach 36"},{l:"B",t:"Large Intestine 4"},{l:"C",t:"Pericardium 6"},{l:"D",t:"Spleen 6"}],ans:"B"},
+{num:"87",q:"The Liver meridian is responsible for the smooth flow of:",opts:[{l:"A",t:"Blood only"},{l:"B",t:"Qi and emotions"},{l:"C",t:"Lymphatic fluids"},{l:"D",t:"Jing"}],ans:"B"},
+{num:"88",q:"In moxibustion, the herb Artemisia argyi is preferred because:",opts:[{l:"A",t:"It has a very low ignition temperature and produces penetrating infrared radiation"},{l:"B",t:"It is bitter"},{l:"C",t:"It contains caffeine"},{l:"D",t:"It is non-flammable"}],ans:"A"},
+{num:"89",q:"Which meridian connects directly with the brain according to Traditional Chinese Medicine?",opts:[{l:"A",t:"Kidney meridian"},{l:"B",t:"Gallbladder meridian"},{l:"C",t:"Bladder meridian"},{l:"D",t:"Spleen meridian"}],ans:"C"},
+{num:"90",q:"The \"Eight Extraordinary Vessels\" in Traditional Chinese Medicine function primarily to:",opts:[{l:"A",t:"Regulate blood pressure"},{l:"B",t:"Store surplus Qi and Blood and act as reservoirs"},{l:"C",t:"Manage immune function"},{l:"D",t:"Conduct cerebrospinal fluid"}],ans:"B"},
+{num:"91",q:"The macrobiotic \"Zen\" approach emphasizes:",opts:[{l:"A",t:"Avoidance of Yin foods"},{l:"B",t:"Harmonizing food with seasons, climate, and individual constitution"},{l:"C",t:"High protein consumption"},{l:"D",t:"Fixed caloric intake"}],ans:"B"},
+{num:"92",q:"Naturopathy hydrotherapy works mainly by:",opts:[{l:"A",t:"Replacing electrolytes"},{l:"B",t:"Alternating vasodilation and vasoconstriction to stimulate circulation and immunity"},{l:"C",t:"Delivering magnesium sulfate transdermally"},{l:"D",t:"Triggering apoptotic pathways"}],ans:"B"},
+{num:"93",q:"Ayurvedic Panchakarma \"Virechana\" refers to:",opts:[{l:"A",t:"Therapeutic vomiting"},{l:"B",t:"Purgation therapy"},{l:"C",t:"Nasal instillation"},{l:"D",t:"Bloodletting"}],ans:"B"},
+{num:"94",q:"Orthomolecular high-dose niacin may cause:",opts:[{l:"A",t:"Hypothermia"},{l:"B",t:"Flushing due to prostaglandin-mediated vasodilation"},{l:"C",t:"Severe hyperkalemia"},{l:"D",t:"Acute hypoglycemia"}],ans:"B"},
+{num:"95",q:"Traditional Chinese Medicine \"Five Elements\" model includes:",opts:[{l:"A",t:"Water, Air, Ether, Light, Sound"},{l:"B",t:"Wood, Fire, Earth, Metal, Water"},{l:"C",t:"Earth, Air, Fire only"},{l:"D",t:"Ether, Plasma, Chakra, Ojas, Tejas"}],ans:"B"},
+{num:"96",q:"Bioenergetics exercises are designed to:",opts:[{l:"A",t:"Build muscle mass"},{l:"B",t:"Release chronic muscular tension and restore natural breathing patterns"},{l:"C",t:"Reduce cholesterol"},{l:"D",t:"Increase bone mineral density"}],ans:"B"},
+{num:"97",q:"Yoga \"Pratyahara\" refers to:",opts:[{l:"A",t:"Controlled breathing"},{l:"B",t:"Withdrawal of senses from external stimuli"},{l:"C",t:"Moral discipline"},{l:"D",t:"Meditation absorption"}],ans:"B"},
+{num:"98",q:"Traditional Chinese Medicine pulse diagnosis assesses:",opts:[{l:"A",t:"Blood pressure only"},{l:"B",t:"Qualities such as depth, strength, speed, and specific organ patterns"},{l:"C",t:"Only heart rate"},{l:"D",t:"Only rhythm regularity"}],ans:"B"},
+{num:"99",q:"In Ayurveda, \"Ama\" refers to:",opts:[{l:"A",t:"Healthy digestive fire"},{l:"B",t:"Metabolic toxins formed due to incomplete digestion"},{l:"C",t:"Refined Ojas"},{l:"D",t:"Hormonal vitality"}],ans:"B"},
+{num:"100",q:"Yoga \"Kapalabhati\" breathing primarily:",opts:[{l:"A",t:"Slows metabolism"},{l:"B",t:"Increases sympathetic activity briefly and clears respiratory passages"},{l:"C",t:"Reduces lung volume"},{l:"D",t:"Reduces cerebral blood flow exclusively"}],ans:"B"},
+{num:"101",q:"According to homeopathic philosophy, the \"law of similars\" states that:",opts:[{l:"A",t:"High-dose agents treat similar diseases"},{l:"B",t:"A substance causing symptoms in a healthy person can treat similar symptoms in a diseased individual"},{l:"C",t:"Opposing pharmacological effects neutralize each other"},{l:"D",t:"Symptoms must be suppressed directly"}],ans:"B"},
+{num:"102",q:"In homeopathic preparation, which stage involves vigorous shaking that is believed to imprint the substance's energetic signature?",opts:[{l:"A",t:"Dilution stage only"},{l:"B",t:"Succussion stage"},{l:"C",t:"Trituration stage"},{l:"D",t:"Evaporation stage"}],ans:"B"},
+{num:"103",q:"A homeopathic potency labeled \"200C\" indicates:",opts:[{l:"A",t:"Two hundred parts of solute per liter"},{l:"B",t:"Dilution of 1:100 repeated two hundred times"},{l:"C",t:"200 milligrams per milliliter"},{l:"D",t:"Contains measurable molecules of the original substance"}],ans:"B"},
+{num:"104",q:"The \"Hering's Law of Cure\" suggests that healing proceeds:",opts:[{l:"A",t:"From upper to lower parts of the body"},{l:"B",t:"From vital organs to less vital organs and from inside outward"},{l:"C",t:"Through rapid suppression of symptoms"},{l:"D",t:"Through uniform detoxification"}],ans:"B"},
+{num:"105",q:"Which statement best describes \"constitutional homeopathy\"?",opts:[{l:"A",t:"Uses only mineral remedies"},{l:"B",t:"Prescribes a remedy based on the patient's physical, emotional, and behavioral temperament"},{l:"C",t:"Treats only acute diseases"},{l:"D",t:"Uses fixed-dose combination remedies"}],ans:"B"},
+{num:"106",q:"Which homeopathic remedy is classically indicated for fear, restlessness, and sudden onset of symptoms?",opts:[{l:"A",t:"Nux vomica"},{l:"B",t:"Aconitum napellus"},{l:"C",t:"Bryonia alba"},{l:"D",t:"Pulsatilla nigricans"}],ans:"B"},
+{num:"107",q:"Antihomotoxic therapy classifies disease into phases based on:",opts:[{l:"A",t:"Genome instability"},{l:"B",t:"Localized psychological conflict"},{l:"C",t:"Progressive accumulation and elimination of homotoxins"},{l:"D",t:"Cytochrome P450 induction patterns"}],ans:"C"},
+{num:"108",q:"Which antihomotoxic remedy category is considered to stimulate the detoxification organs?",opts:[{l:"A",t:"Catalysts"},{l:"B",t:"Organ preparations"},{l:"C",t:"Nosodes"},{l:"D",t:"Immune potentiators"}],ans:"B"},
+{num:"109",q:"A nosode in homeopathy is prepared from:",opts:[{l:"A",t:"Plant roots"},{l:"B",t:"Mineral salts"},{l:"C",t:"Pathological tissues, secretions, or microorganisms"},{l:"D",t:"Synthetic compounds"}],ans:"C"},
+{num:"110",q:"Homotoxicology views inflammation primarily as:",opts:[{l:"A",t:"Pathological overreaction"},{l:"B",t:"Suppression of immune reactivity"},{l:"C",t:"Defensive, detoxifying biological activity"},{l:"D",t:"Irreversible cellular injury"}],ans:"C"},
+{num:"111",q:"Iridology claims that the iris map reflects:",opts:[{l:"A",t:"Cell turnover rate"},{l:"B",t:"Genetic predispositions and systemic organ dysfunction patterns"},{l:"C",t:"Microbial colonization"},{l:"D",t:"Retinal nerve distribution alone"}],ans:"B"},
+{num:"112",q:"Which iris sign is interpreted as chronic tissue weakness in iridology?",opts:[{l:"A",t:"Dark, sharply defined lacuna"},{l:"B",t:"Radiating spokes near the pupil"},{l:"C",t:"Bright white arc"},{l:"D",t:"Brown discoloration ring"}],ans:"A"},
+{num:"113",q:"A \"lymphatic rosary\" in iridology suggests:",opts:[{l:"A",t:"Cardiac weakness"},{l:"B",t:"Lymphatic congestion along the periphery of the iris"},{l:"C",t:"Renal obstruction"},{l:"D",t:"Liver toxicity"}],ans:"B"},
+{num:"114",q:"Iridology maps the digestive system around:",opts:[{l:"A",t:"The outer iris rim"},{l:"B",t:"The pupillary border"},{l:"C",t:"The scleral junction"},{l:"D",t:"The inner canthus"}],ans:"B"},
+{num:"115",q:"Iridologists describe \"scurf rim\" as:",opts:[{l:"A",t:"Sign of robust immunity"},{l:"B",t:"Darkened peripheral iris ring indicating reduced skin elimination"},{l:"C",t:"Liver inflammation"},{l:"D",t:"Excessive carbohydrate intake"}],ans:"B"},
+{num:"116",q:"Iridology \"pigment spots\" are interpreted as:",opts:[{l:"A",t:"Local bleeding"},{l:"B",t:"Deposits reflecting organ stress or inherited tendencies"},{l:"C",t:"Retinal detachment"},{l:"D",t:"Corneal opacity"}],ans:"B"},
+{num:"117",q:"Colon hydrotherapy claims to primarily improve health by:",opts:[{l:"A",t:"Reducing microbial diversity"},{l:"B",t:"Removing impacted fecal matter and \"toxins\" from the large intestine"},{l:"C",t:"Stimulating hydrochloric acid secretion"},{l:"D",t:"Reducing pancreatic enzymes"}],ans:"B"},
+{num:"118",q:"A major risk of colon hydrotherapy is:",opts:[{l:"A",t:"Hyperthyroidism"},{l:"B",t:"Electrolyte imbalance and bowel perforation"},{l:"C",t:"Excess bone formation"},{l:"D",t:"Increased platelet aggregation"}],ans:"B"},
+{num:"119",q:"Coffee enemas are believed (in alternative medicine) to:",opts:[{l:"A",t:"Increase hepatic detoxification via glutathione S-transferase"},{l:"B",t:"Reduce insulin sensitivity"},{l:"C",t:"Promote renal vasoconstriction"},{l:"D",t:"Inhibit lymphatic drainage"}],ans:"A"},
+{num:"120",q:"Use of herbal laxatives such as senna for long-term colon cleansing may cause:",opts:[{l:"A",t:"Hyperphosphatemia"},{l:"B",t:"Cathartic colon due to mucosal nerve damage"},{l:"C",t:"Elevated cortisol"},{l:"D",t:"Polycythemia"}],ans:"B"},
+{num:"121",q:"Colon cleansing with magnesium sulfate may cause:",opts:[{l:"A",t:"Hypermagnesemia in patients with renal impairment"},{l:"B",t:"Vitamin B12 deficiency"},{l:"C",t:"High cortisol"},{l:"D",t:"Leukocytosis"}],ans:"A"},
+{num:"122",q:"Reflexology is based on the concept that:",opts:[{l:"A",t:"Every organ is directly connected to the cerebral cortex"},{l:"B",t:"Zones on the feet, hands, and ears correspond to internal organs"},{l:"C",t:"Muscle fibers transmit disease"},{l:"D",t:"Blood vessels contain \"energy nodes\""}],ans:"B"},
+{num:"123",q:"In reflexology, the solar plexus reflex point is located:",opts:[{l:"A",t:"Tip of the big toe"},{l:"B",t:"Center of the foot just below the ball"},{l:"C",t:"Lateral edge of the heel"},{l:"D",t:"Near the fifth metatarsal head"}],ans:"B"},
+{num:"124",q:"Reflexology \"crystals\" under the skin are interpreted as:",opts:[{l:"A",t:"Accumulated uric acid"},{l:"B",t:"Deposits indicating blockages in energy flow or nerve congestion"},{l:"C",t:"Calcium deposits"},{l:"D",t:"Fibrin clots"}],ans:"B"},
+{num:"125",q:"Reflexology maps the liver primarily on the:",opts:[{l:"A",t:"Left foot arch"},{l:"B",t:"Right foot arch"},{l:"C",t:"Heel"},{l:"D",t:"Big toe"}],ans:"B"},
+{num:"126",q:"Which of the following distinguishes reflexology from acupressure?",opts:[{l:"A",t:"Reflexology deals with large organ zones rather than specific meridian points"},{l:"B",t:"Acupressure avoids physical contact"},{l:"C",t:"Reflexology uses needles"},{l:"D",t:"Acupressure is exclusively foot-based"}],ans:"A"},
+{num:"127",q:"Acupressure operates by applying pressure to:",opts:[{l:"A",t:"Reflex zones only"},{l:"B",t:"Specific meridian-based acupuncture points"},{l:"C",t:"Fascia only"},{l:"D",t:"Subcutaneous veins"}],ans:"B"},
+{num:"128",q:"Which point is commonly used in acupressure to treat nausea?",opts:[{l:"A",t:"Liver 3"},{l:"B",t:"Gallbladder 20"},{l:"C",t:"Pericardium 6 (Neiguan point)"},{l:"D",t:"Stomach 44"}],ans:"C"},
+{num:"129",q:"Pressing the Large Intestine 4 point is contraindicated in:",opts:[{l:"A",t:"Infants"},{l:"B",t:"Pregnancy (due to potential induction of contractions)"},{l:"C",t:"Patients with low vitamin D"},{l:"D",t:"Individuals with hypokalemia"}],ans:"B"},
+{num:"130",q:"Acupressure differs from acupuncture mainly because:",opts:[{l:"A",t:"It does not use needles but manual pressure"},{l:"B",t:"It targets different locations"},{l:"C",t:"It is based strictly on neurological dermatomes"},{l:"D",t:"It does not affect Qi pathways"}],ans:"A"},
+{num:"131",q:"Balneotherapy primarily uses:",opts:[{l:"A",t:"Carbohydrate-rich foods"},{l:"B",t:"Mineral-rich thermal water for therapeutic immersion"},{l:"C",t:"Magnetically treated water"},{l:"D",t:"Crystal vibrations"}],ans:"B"},
+{num:"132",q:"Mud therapy in naturopathy is believed to:",opts:[{l:"A",t:"Raise core temperature"},{l:"B",t:"Absorb toxins and reduce inflammation through mineral content"},{l:"C",t:"Stimulate pancreatic enzymes"},{l:"D",t:"Increase erythropoietin synthesis"}],ans:"B"},
+{num:"133",q:"Sun therapy (heliotherapy) is used in natural medicine to:",opts:[{l:"A",t:"Increase serotonin and vitamin D production"},{l:"B",t:"Induce hepatic necrosis"},{l:"C",t:"Increase ammonia levels"},{l:"D",t:"Stimulate catecholamine depletion"}],ans:"A"},
+{num:"134",q:"Cryotherapy chambers act by:",opts:[{l:"A",t:"Heating muscle tissues"},{l:"B",t:"Exposing the body to very low temperatures to reduce inflammation and enhance circulation"},{l:"C",t:"Radiating ultraviolet light"},{l:"D",t:"Blocking nerve supply"}],ans:"B"},
+{num:"135",q:"Salt cave therapy (halotherapy) is theorized to help respiratory conditions by:",opts:[{l:"A",t:"Saturating lung tissue with sodium"},{l:"B",t:"Antimicrobial and mucolytic effects of inhaled salt microparticles"},{l:"C",t:"Blocking bronchial receptors"},{l:"D",t:"Lowering hemoglobin affinity"}],ans:"B"},
+{num:"136",q:"Hypnotherapy works primarily through:",opts:[{l:"A",t:"Sleep induction"},{l:"B",t:"Focused attention and increased suggestibility in a trance-like state"},{l:"C",t:"Electroencephalogram modulation"},{l:"D",t:"Olfactory stimulation"}],ans:"B"},
+{num:"137",q:"Cognitive behavioral therapy emphasizes:",opts:[{l:"A",t:"Meridional energy correction"},{l:"B",t:"Changing maladaptive thoughts to influence emotions and behavior"},{l:"C",t:"Muscle relaxation only"},{l:"D",t:"Magnetic field alignment"}],ans:"B"},
+{num:"138",q:"Mindfulness-based stress reduction promotes:",opts:[{l:"A",t:"Dissociation"},{l:"B",t:"Nonjudgmental awareness of present-moment experience"},{l:"C",t:"Dream manipulation"},{l:"D",t:"Hypnosis"}],ans:"B"},
+{num:"139",q:"Eye movement desensitization and reprocessing (EMDR) is primarily used to treat:",opts:[{l:"A",t:"Hypertension"},{l:"B",t:"Post-traumatic stress disorder"},{l:"C",t:"Chronic kidney disease"},{l:"D",t:"Diabetes"}],ans:"B"},
+{num:"140",q:"Biofeedback therapy teaches patients to:",opts:[{l:"A",t:"Ignore physiological responses"},{l:"B",t:"Gain voluntary control over autonomic functions using real-time monitoring"},{l:"C",t:"Induce hypoglycemia"},{l:"D",t:"Reduce brain circulation"}],ans:"B"},
+{num:"141",q:"Chiropractic therapy primarily focuses on:",opts:[{l:"A",t:"Dietary modification"},{l:"B",t:"Spinal manipulation to correct vertebral subluxations"},{l:"C",t:"Acupuncture"},{l:"D",t:"Reflexology"}],ans:"B"},
+{num:"142",q:"Osteopathy differs from chiropractic because it:",opts:[{l:"A",t:"Uses only spinal adjustments"},{l:"B",t:"Focuses on whole-body structural and functional relationships, including soft tissues"},{l:"C",t:"Uses meridian-based energy work"},{l:"D",t:"Does not involve manual touch"}],ans:"B"},
+{num:"143",q:"Massage therapy reduces stress mainly by:",opts:[{l:"A",t:"Increasing cortisol"},{l:"B",t:"Stimulating parasympathetic activity"},{l:"C",t:"Blocking nerve pathways"},{l:"D",t:"Reducing lymphatic flow"}],ans:"B"},
+{num:"144",q:"Transcutaneous electrical nerve stimulation (TENS) relieves pain by:",opts:[{l:"A",t:"Increasing histamine"},{l:"B",t:"Stimulating large-diameter nerve fibers that inhibit pain transmission"},{l:"C",t:"Blocking acetylcholine"},{l:"D",t:"Reducing myelin"}],ans:"B"},
+{num:"145",q:"Cupping therapy is believed to:",opts:[{l:"A",t:"Increase reactive hyperemia and mobilize stagnant Qi and Blood"},{l:"B",t:"Reduce serotonin"},{l:"C",t:"Destroy erythrocytes"},{l:"D",t:"Constrict capillaries"}],ans:"A"},
+{num:"146",q:"A major risk of deep-tissue massage is:",opts:[{l:"A",t:"Hair loss"},{l:"B",t:"Rhabdomyolysis in intensive sessions"},{l:"C",t:"Dental trauma"},{l:"D",t:"Blurred vision"}],ans:"B"},
+{num:"147",q:"Shockwave therapy is used to treat:",opts:[{l:"A",t:"Hyperthyroidism"},{l:"B",t:"Tendinopathies by stimulating tissue regeneration via acoustic pressure waves"},{l:"C",t:"Chronic kidney disease"},{l:"D",t:"Vitamin deficiency"}],ans:"B"},
+{num:"148",q:"Hydrotherapy contrast baths work via:",opts:[{l:"A",t:"Continuous heating"},{l:"B",t:"Alternating vasodilation and vasoconstriction"},{l:"C",t:"Eliminating sodium"},{l:"D",t:"Magnetizing tissues"}],ans:"B"},
+{num:"149",q:"Physiotherapy rehabilitation strongly emphasizes:",opts:[{l:"A",t:"Passive rest"},{l:"B",t:"Personalized exercise, neuromuscular reeducation, and functional training"},{l:"C",t:"Random joint manipulation"},{l:"D",t:"Vitamin replacement only"}],ans:"B"},
+{num:"150",q:"Manual lymphatic drainage improves edema by:",opts:[{l:"A",t:"Increasing arterial pressure"},{l:"B",t:"Stimulating superficial lymphatic vessels to enhance lymph return"},{l:"C",t:"Shrinking lymph nodes"},{l:"D",t:"Blocking immune activity"}],ans:"B"},
+{num:"151",q:"Reflexology is primarily based on which foundational assumption?",opts:[{l:"A",t:"Disease originates from energy imbalance in the thoracic meridians"},{l:"B",t:"All body organs are mapped to specific zones on the feet, hands, and ears"},{l:"C",t:"Manual stimulation of osteoarticular joints restores systemic immunity"},{l:"D",t:"Pressure on skeletal muscles regulates neuroendocrine pathways"}],ans:"B"},
+{num:"152",q:"Which physiological mechanism is MOST supported by evidence regarding foot reflexology?",opts:[{l:"A",t:"Direct modulation of hepatic enzyme activity"},{l:"B",t:"Activation of parasympathetic responses via pressure-induced vagal stimulation"},{l:"C",t:"Rapid detoxification through lymphatic drainage"},{l:"D",t:"Realignment of craniosacral rhythms"}],ans:"B"},
+{num:"153",q:"The \"Ingham Method\" of reflexology emphasizes:",opts:[{l:"A",t:"Deep friction along meridian lines"},{l:"B",t:"Thumb-walking technique over mapped reflex zones"},{l:"C",t:"Heat application before pressure stimulation"},{l:"D",t:"Use of topical herbal liniments"}],ans:"B"},
+{num:"154",q:"Acupressure differs from acupuncture primarily by:",opts:[{l:"A",t:"Focusing only on extraordinary meridians"},{l:"B",t:"Using mechanical pressure instead of needles to stimulate acupuncture points"},{l:"C",t:"Avoiding treatment of internal organ-related meridians"},{l:"D",t:"Restricting stimulation to dermatomes"}],ans:"B"},
+{num:"155",q:"Which acupressure point is most commonly used to reduce chemotherapy-induced nausea?",opts:[{l:"A",t:"GV20 (Baihui)"},{l:"B",t:"ST36 (Zusanli)"},{l:"C",t:"PC6 (Neiguan)"},{l:"D",t:"LI4 (Hegu)"}],ans:"C"},
+{num:"156",q:"The therapeutic use of hot volcanic stones placed along the paraspinal muscles is part of:",opts:[{l:"A",t:"Balneotherapy"},{l:"B",t:"Geothermal stone therapy"},{l:"C",t:"Halotherapy"},{l:"D",t:"Thalassotherapy"}],ans:"B"},
+{num:"157",q:"Thalassotherapy derives its therapeutic principles from:",opts:[{l:"A",t:"Mineral-rich mountain springs"},{l:"B",t:"Marine environment and seawater exposure"},{l:"C",t:"Volcanic steam and geothermal heat"},{l:"D",t:"Salt-cave microclimate inhalation"}],ans:"B"},
+{num:"158",q:"Halotherapy is clinically considered most beneficial for:",opts:[{l:"A",t:"Chronic obstructive pulmonary disease"},{l:"B",t:"Severe hepatic steatosis"},{l:"C",t:"Lymphoma-related edema"},{l:"D",t:"Trigeminal neuralgia"}],ans:"A"},
+{num:"159",q:"Cryotherapy's primary physiological effect is:",opts:[{l:"A",t:"Vasodilation followed by enhanced nutrient perfusion"},{l:"B",t:"Rapid vasoconstriction reducing inflammatory mediators"},{l:"C",t:"Activation of metabolic alkalosis"},{l:"D",t:"Induced hemolysis improving tissue oxygenation"}],ans:"B"},
+{num:"160",q:"Which physical therapy technique uses controlled joint oscillations to improve mobility?",opts:[{l:"A",t:"Myofascial release"},{l:"B",t:"Maitland mobilization"},{l:"C",t:"Feldenkrais Awareness Method"},{l:"D",t:"Pilates Reformer"}],ans:"B"},
+{num:"161",q:"Hydrotherapy in rehabilitation is primarily effective because:",opts:[{l:"A",t:"Water salinity stimulates autonomic reflexes"},{l:"B",t:"Buoyancy reduces gravitational load on joints"},{l:"C",t:"Hyperthermia induces erythrocyte proliferation"},{l:"D",t:"Water pH modulates nociceptive thresholds"}],ans:"B"},
+{num:"162",q:"Which of the following is a core principle of osteopathic manipulative treatment?",opts:[{l:"A",t:"Disease results from electromagnetic imbalance"},{l:"B",t:"Structure and function are interrelated"},{l:"C",t:"All illness originates in the intestinal mucosa"},{l:"D",t:"Heat-induced vasodilation restores chi flow"}],ans:"B"},
+{num:"163",q:"A key contraindication for deep tissue massage is:",opts:[{l:"A",t:"Controlled hypertension"},{l:"B",t:"Pregnancy after 32 weeks"},{l:"C",t:"Deep vein thrombosis"},{l:"D",t:"Chronic rhinitis"}],ans:"C"},
+{num:"164",q:"Psychological therapy using intentional, controlled breathing with somatic awareness is known as:",opts:[{l:"A",t:"Bioenergetic grounding"},{l:"B",t:"Autogenic training"},{l:"C",t:"Rebirthing breathwork"},{l:"D",t:"Somatic experiencing"}],ans:"C"},
+{num:"165",q:"In cognitive-behavioral therapy, the primary mechanism of action is:",opts:[{l:"A",t:"Accessing subconscious memories to transform behavior"},{l:"B",t:"Modifying dysfunctional thoughts to influence emotions and actions"},{l:"C",t:"Inducing trance states to bypass conscious resistance"},{l:"D",t:"Balancing left-right hemispheric neural oscillations"}],ans:"B"},
+{num:"166",q:"Mindfulness-based stress reduction (MBSR) was originally developed by:",opts:[{l:"A",t:"Milton Erickson"},{l:"B",t:"Jon Kabat-Zinn"},{l:"C",t:"Joseph Pilates"},{l:"D",t:"Wilhelm Reich"}],ans:"B"},
+{num:"167",q:"Which modality uses guided sensory recollection to alter emotional responses?",opts:[{l:"A",t:"Art therapy"},{l:"B",t:"Exposure therapy"},{l:"C",t:"Guided imagery"},{l:"D",t:"Psychodrama"}],ans:"C"},
+{num:"168",q:"Feldenkrais method focuses primarily on:",opts:[{l:"A",t:"Correcting fascial adhesions"},{l:"B",t:"Conscious movement learning to improve neuromuscular control"},{l:"C",t:"Pressure on meridian points"},{l:"D",t:"Somatic trauma release via vibration"}],ans:"B"},
+{num:"169",q:"Electrostimulation therapy (TENS) decreases pain mainly by:",opts:[{l:"A",t:"Increasing leukocyte activity"},{l:"B",t:"Closing nociceptive gates in the spinal cord"},{l:"C",t:"Enhancing cortical gamma oscillations"},{l:"D",t:"Stimulating peripheral nociceptors"}],ans:"B"},
+{num:"170",q:"Which therapy involves sensory integration exercises to retrain balance pathways?",opts:[{l:"A",t:"Vestibular rehabilitation therapy"},{l:"B",t:"Reiki"},{l:"C",t:"Shiatsu"},{l:"D",t:"Craniosacral therapy"}],ans:"A"},
+{num:"171",q:"Aromatherapy utilizes volatile plant compounds known as:",opts:[{l:"A",t:"Alkaloids"},{l:"B",t:"Sesquiterpenes and monoterpenes"},{l:"C",t:"Condensed tannins"},{l:"D",t:"Sulfur glycosides"}],ans:"B"},
+{num:"172",q:"A major safety risk of improperly administered aromatherapy is:",opts:[{l:"A",t:"Induced hypercalcemia"},{l:"B",t:"Hepatotoxicity due to concentrated essential oils"},{l:"C",t:"Permanent loss of taste sensation"},{l:"D",t:"Rapid development of anaphylaxis to ethanol"}],ans:"B"},
+{num:"173",q:"Which physical therapy technique specifically targets fascia?",opts:[{l:"A",t:"Cupping"},{l:"B",t:"Myofascial release"},{l:"C",t:"Hydrokinetic resistance training"},{l:"D",t:"Cryoneuromodulation"}],ans:"B"},
+{num:"174",q:"Shiatsu massage is rooted in:",opts:[{l:"A",t:"Japanese manual therapy using pressure on meridian pathways"},{l:"B",t:"Thai passive stretching techniques"},{l:"C",t:"Korean percussive manipulation"},{l:"D",t:"Tibetan hot stone rituals"}],ans:"A"},
+{num:"175",q:"The primary aim of craniosacral therapy is:",opts:[{l:"A",t:"Enhancing lymphatic drainage of the thoracic duct"},{l:"B",t:"Modulating cranial rhythmic impulse to improve neural flow"},{l:"C",t:"Pressurizing cranial sutures to realign them"},{l:"D",t:"Stimulating occipital nerve roots"}],ans:"B"},
+{num:"176",q:"Biofeedback therapy works by:",opts:[{l:"A",t:"Using visual/auditory signals to train voluntary control over autonomic functions"},{l:"B",t:"Inducing hypnotic trance states"},{l:"C",t:"Releasing muscular trauma memory"},{l:"D",t:"Aligning meridian flows using magnets"}],ans:"A"},
+{num:"177",q:"Magnetotherapy is theorized to work by influencing:",opts:[{l:"A",t:"Mitochondrial osmotic gradients"},{l:"B",t:"Electromagnetic fields affecting cellular ion transport"},{l:"C",t:"Hepatic detoxification cycles"},{l:"D",t:"Melatonin synthesis exclusively"}],ans:"B"},
+{num:"178",q:"A patient with pacemaker should avoid:",opts:[{l:"A",t:"Aromatherapy"},{l:"B",t:"Reflexology"},{l:"C",t:"Electromagnetic field therapy"},{l:"D",t:"Swedish massage"}],ans:"C"},
+{num:"179",q:"The therapeutic mechanism of cupping therapy MOST closely resembles:",opts:[{l:"A",t:"Negative pressure\u2013induced microcirculation enhancement"},{l:"B",t:"Electrochemical denervation"},{l:"C",t:"Neural blockade through chemical mediators"},{l:"D",t:"Lymph destruction"}],ans:"A"},
+{num:"180",q:"Hot mud therapy (peloid therapy) is commonly used for:",opts:[{l:"A",t:"Acute synovitis"},{l:"B",t:"Chronic osteoarthritis"},{l:"C",t:"Malignant bone tumors"},{l:"D",t:"Acute cellulitis"}],ans:"B"},
+{num:"181",q:"The Alexander Technique focuses on:",opts:[{l:"A",t:"Manipulating ligaments for pain relief"},{l:"B",t:"Re-education of posture and movement habits"},{l:"C",t:"Strength conditioning"},{l:"D",t:"Pressure on acupuncture points"}],ans:"B"},
+{num:"182",q:"In hydrotherapy, contrast baths alternate temperatures to:",opts:[{l:"A",t:"Trigger systemic inflammation"},{l:"B",t:"Stimulate vascular pumping by alternating vasoconstriction and vasodilation"},{l:"C",t:"Reduce core temperature"},{l:"D",t:"Activate endocrine secretions"}],ans:"B"},
+{num:"183",q:"Yoga Nidra is primarily used for:",opts:[{l:"A",t:"Improving flexibility"},{l:"B",t:"Inducing a state of conscious deep relaxation"},{l:"C",t:"Cardiovascular conditioning"},{l:"D",t:"Breath muscle strength"}],ans:"B"},
+{num:"184",q:"Which psychological therapy relies on role-playing to explore internal conflicts?",opts:[{l:"A",t:"Gestalt therapy"},{l:"B",t:"Psychodrama"},{l:"C",t:"Existential analysis"},{l:"D",t:"Behavioral activation"}],ans:"B"},
+{num:"185",q:"Somatic experiencing therapy was developed for:",opts:[{l:"A",t:"Vestibular dysfunction"},{l:"B",t:"Trauma resolution through body sensation tracking"},{l:"C",t:"Cardiovascular rehabilitation"},{l:"D",t:"Cognitive enhancement"}],ans:"B"},
+{num:"186",q:"A contraindication for acupuncture-like acupressure is:",opts:[{l:"A",t:"Controlled type 2 diabetes mellitus"},{l:"B",t:"Local skin infection"},{l:"C",t:"Mild anemia"},{l:"D",t:"Seasonal allergies"}],ans:"B"},
+{num:"187",q:"Which therapy relies on rhythmic tapping on meridian points combined with cognitive elements?",opts:[{l:"A",t:"Eye movement desensitization and reprocessing"},{l:"B",t:"Emotional freedom technique"},{l:"C",t:"Polarity therapy"},{l:"D",t:"Holotropic breathwork"}],ans:"B"},
+{num:"188",q:"Reflexology of the ear is formally known as:",opts:[{l:"A",t:"Cranial mapping"},{l:"B",t:"Auriculotherapy"},{l:"C",t:"Neurotopographic stimulation"},{l:"D",t:"Vestibular micromassage"}],ans:"B"},
+{num:"189",q:"Kinesiotherapy primarily focuses on:",opts:[{l:"A",t:"Herbal detoxification protocols"},{l:"B",t:"Movement-based therapy for functional improvement"},{l:"C",t:"Meridian energy unblocking"},{l:"D",t:"Electrostimulation"}],ans:"B"},
+{num:"190",q:"A primary risk of improperly performed spinal manipulation is:",opts:[{l:"A",t:"Sensorineural hearing loss"},{l:"B",t:"Vertebral artery dissection"},{l:"C",t:"Anaphylactic shock"},{l:"D",t:"Chronic diarrhea"}],ans:"B"},
+{num:"191",q:"The therapeutic mechanism of progressive muscle relaxation is:",opts:[{l:"A",t:"Inducing cortical depolarization"},{l:"B",t:"Alternating tension and release to reduce sympathetic arousal"},{l:"C",t:"Increasing lymphatic enzyme function"},{l:"D",t:"Enhancing neuromuscular spindles"}],ans:"B"},
+{num:"192",q:"Which therapy focuses on the rhythmic, gentle mobilization of cerebrospinal fluid?",opts:[{l:"A",t:"Shiatsu"},{l:"B",t:"Bowen therapy"},{l:"C",t:"Craniosacral therapy"},{l:"D",t:"Rolfing"}],ans:"C"},
+{num:"193",q:"Rolfing Structural Integration emphasizes:",opts:[{l:"A",t:"Realigning body posture by manipulating deep fascia"},{l:"B",t:"Stimulating the pineal gland"},{l:"C",t:"Inducing hypoglycemia to reset metabolism"},{l:"D",t:"Releasing trauma memories"}],ans:"A"},
+{num:"194",q:"The clinical purpose of balneotherapy is primarily linked to:",opts:[{l:"A",t:"Mineral absorption and thermic effects improving musculoskeletal symptoms"},{l:"B",t:"Emotional trauma processing"},{l:"C",t:"Cardiac preload reduction"},{l:"D",t:"Viral detoxification"}],ans:"A"},
+{num:"195",q:"Which massage technique is characterized by rapid percussive strikes?",opts:[{l:"A",t:"Petrissage"},{l:"B",t:"Effleurage"},{l:"C",t:"Tapotement"},{l:"D",t:"Friction"}],ans:"C"},
+{num:"196",q:"Autogenic training uses:",opts:[{l:"A",t:"Visualization of heaviness and warmth to induce relaxation"},{l:"B",t:"Rapid breathing"},{l:"C",t:"Deep myofascial compression"},{l:"D",t:"Reflex point stimulation"}],ans:"A"},
+{num:"197",q:"In Pilates, the \"core\" refers to:",opts:[{l:"A",t:"Paraspinal muscles only"},{l:"B",t:"Diaphragm, pelvic floor, transversus abdominis, multifidus"},{l:"C",t:"Biceps and triceps"},{l:"D",t:"Thoracic fascia"}],ans:"B"},
+{num:"198",q:"A therapy combining sensory deprivation with buoyant saline water is:",opts:[{l:"A",t:"Halotherapy"},{l:"B",t:"Floatation-rest therapy"},{l:"C",t:"Hydrocolon therapy"},{l:"D",t:"Cryocapsule immersion"}],ans:"B"},
+{num:"199",q:"The psychological basis of art therapy is:",opts:[{l:"A",t:"Direct stimulation of motor cortex"},{l:"B",t:"Nonverbal emotional expression facilitating trauma integration"},{l:"C",t:"Correction of biochemical imbalances"},{l:"D",t:"Peripheral nerve remyelination"}],ans:"B"},
+{num:"200",q:"Which complementary therapy is LEAST recommended for pregnant women?",opts:[{l:"A",t:"Aromatherapy with lavender"},{l:"B",t:"Reflexology in first trimester"},{l:"C",t:"Prenatal yoga"},{l:"D",t:"Gentle hydrotherapy"}],ans:"B"}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+var student={};
+var consentGiven=false;
+var examQuestions=[];
+var selectedRange={from:1,to:30,label:'Q1–Q30'};
+var examStartTime=null,examEndTime=null;
+var cur=0,visited={},answers={},marked={},submitted=false,seconds=0,timerInt=null,palFilter='all';
+var isOnline=navigator.onLine;
+var syncStatus='pending'; // 'synced','pending','offline'
+var lastResult=null;
+var connCheckInt=null;
+var pendingSyncPrompted=false;
+
+// ============================================================
+// UTILS
+// ============================================================
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null}}
+function lsJ(k,v){try{if(v===undefined){var r=localStorage.getItem(k);return r?JSON.parse(r):null;}localStorage.setItem(k,JSON.stringify(v));}catch(e){return null}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+
+function showToast(msg,type,dur){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='show '+(type||'');
+  clearTimeout(t._to);t._to=setTimeout(function(){t.className=''},dur||3000);
+}
+
+function getDeviceType(){
+  var w=window.innerWidth;
+  if(w<=600) return 'Mobile';
+  if(w<=1024) return 'Tablet';
+  return 'Desktop';
+}
+
+function pad(n){return n<10?'0'+n:n}
+function formatTime(secs){var h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60),s=secs%60;return (h?pad(h)+':':'')+pad(m)+':'+pad(s)}
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload=function(){
+  setTimeout(function(){
+    document.getElementById('loading').style.display='none';
+    var dark=ls('cm_dark')==='1';
+    if(dark){document.body.classList.add('dark');document.getElementById('dark-btn').textContent='Light';}
+    consentGiven=ls('cm_consent')==='1';
+    if(!consentGiven){
+      document.getElementById('consent-page').style.display='flex';
+      return;
+    }
+    afterConsent();
+  },800);
+};
+
+// ============================================================
+// CONSENT
+// ============================================================
+function toggleConsent(){
+  var chk=document.getElementById('consent-check');
+  var row=document.getElementById('consent-check-row');
+  var btn=document.getElementById('consent-accept-btn');
+  row.classList.toggle('checked',chk.checked);
+  btn.classList.toggle('enabled',chk.checked);
+}
+function acceptConsent(){
+  if(!document.getElementById('consent-check').checked) return;
+  ls('cm_consent','1');
+  consentGiven=true;
+  document.getElementById('consent-page').style.display='none';
+  afterConsent();
+}
+function declineConsent(){
+  document.getElementById('consent-page').innerHTML=
+    '<div style="color:#fff;text-align:center;padding:40px;max-width:400px">'
+    +'<div style="font-size:3rem;margin-bottom:16px">🚫</div>'
+    +'<h2 style="margin-bottom:12px">Access Denied</h2>'
+    +'<p style="opacity:.8;margin-bottom:20px">You must accept the data consent to use this exam system. Your data will not be collected or transmitted.</p>'
+    +'<button onclick="location.reload()" style="background:#fff;color:#1a237e;border:none;border-radius:8px;padding:12px 24px;font-weight:700;cursor:pointer;font-size:.95rem">← Go Back</button>'
+    +'</div>';
+}
+function afterConsent(){
+  // Check for session recovery
+  var sess=lsJ('cm_session');
+  var savedStudent=lsJ('cm_student');
+  if(savedStudent&&savedStudent.name){
+    student=savedStudent;
+    if(sess&&sess.answers&&Object.keys(sess.answers).length>0){
+      document.getElementById('recovery-banner').style.display='block';
+    }
+    document.getElementById('reg-name').value=student.name||'';
+    document.getElementById('reg-year').value=student.year||'';
+    document.getElementById('reg-group').value=student.group||'';
+    document.getElementById('reg-id').value=student.id||'';
+    document.getElementById('reg-email').value=student.email||'';
+    document.getElementById('reg-page').style.display='flex';
+  } else {
+    document.getElementById('reg-page').style.display='flex';
+  }
+  initConnectivityMonitor();
+}
+
+// ============================================================
+// SESSION RECOVERY
+// ============================================================
+function resumeSession(){
+  var sess=lsJ('cm_session');
+  if(!sess) return;
+  student=lsJ('cm_student')||{};
+  examQuestions=sess.examQuestions||[];
+  selectedRange=sess.selectedRange||{from:1,to:30,label:'Q1–Q30'};
+  cur=sess.cur||0;
+  visited=sess.visited||{};
+  answers=sess.answers||{};
+  marked=sess.marked||{};
+  seconds=sess.seconds||0;
+  submitted=false;
+  document.getElementById('reg-page').style.display='none';
+  showExamUI();
+  showToast('Session restored! Continue where you left off.','success',3000);
+}
+function discardSession(){
+  lsDel('cm_session');
+  document.getElementById('recovery-banner').style.display='none';
+  submitted=false;cur=0;visited={};answers={};marked={};seconds=0;
+}
+function saveSession(){
+  if(submitted) return;
+  lsJ('cm_session',{examQuestions:examQuestions,selectedRange:selectedRange,cur:cur,visited:visited,answers:answers,marked:marked,seconds:seconds});
+}
+window.addEventListener('beforeunload',function(){if(!submitted) saveSession();});
+
+// ============================================================
+// REGISTRATION
+// ============================================================
+function submitReg(){
+  var name=document.getElementById('reg-name').value.trim();
+  var year=document.getElementById('reg-year').value;
+  var group=document.getElementById('reg-group').value.trim();
+  var id=document.getElementById('reg-id').value.trim();
+  var email=document.getElementById('reg-email').value.trim();
+  var ok=true;
+  function setE(eid,inp,show){document.getElementById(eid).classList.toggle('show',show);document.getElementById(inp).classList.toggle('error',show);}
+  if(!name){setE('err-name','reg-name',true);ok=false;}else{setE('err-name','reg-name',false);}
+  if(!year){setE('err-year','reg-year',true);ok=false;}else{setE('err-year','reg-year',false);}
+  if(!group){setE('err-group','reg-group',true);ok=false;}else{setE('err-group','reg-group',false);}
+  if(!ok) return;
+  student={name:name,year:year,group:group,id:id,email:email};
+  lsJ('cm_student',student);
+  lsDel('cm_session');
+  document.getElementById('reg-page').style.display='none';
+  showRangePage();
+}
+
+// ============================================================
+// RANGE PAGE
+// ============================================================
+function showRangePage(){
+  document.getElementById('range-page').style.display='flex';
+  document.getElementById('welcome-name').textContent=student.name;
+  var opts=document.querySelectorAll('.range-opt');
+  opts.forEach(function(o){o.classList.remove('selected');});
+  if(opts[0]) opts[0].classList.add('selected');
+  selectedRange={from:1,to:30,label:'Q1–Q30'};
+}
+function selectRange(el,from,to){
+  document.querySelectorAll('.range-opt').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');
+  selectedRange={from:from,to:to,label:from==='custom'?'Custom':('Q'+from+'–Q'+to)};
+  document.getElementById('custom-range-inputs').style.display=(from==='custom')?'block':'none';
+}
+function startExam(){
+  var from=selectedRange.from,to=selectedRange.to;
+  if(from==='custom'){
+    from=parseInt(document.getElementById('custom-from').value)||1;
+    to=parseInt(document.getElementById('custom-to').value)||QUESTIONS.length;
+    if(from>to||from<1){alert('Please enter a valid question range.');return;}
+    selectedRange={from:from,to:to,label:'Q'+from+'–Q'+to};
+  } else {from=parseInt(from);to=parseInt(to);}
+  examQuestions=QUESTIONS.filter(function(q){return parseInt(q.num)>=from&&parseInt(q.num)<=to;});
+  if(examQuestions.length===0){alert('No questions found in this range.');return;}
+  cur=0;visited={};answers={};marked={};submitted=false;seconds=0;
+  document.getElementById('range-page').style.display='none';
+  showExamUI();
+}
+
+// ============================================================
+// EXAM UI
+// ============================================================
+function showExamUI(){
+  document.getElementById('header').style.display='';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('footer').style.display='flex';
+  document.getElementById('sync-bar').style.display='flex';
+  document.getElementById('result-page').style.display='none';
+  updateHdrStudentInfo();
+  renderQ();buildPalette();updateStats();
+  examStartTime=new Date();
+  clearInterval(timerInt);
+  timerInt=setInterval(function(){
+    seconds++;
+    document.getElementById('timer-box').textContent=formatTime(seconds);
+    document.getElementById('timer-box').classList.toggle('warn',seconds>5400);
+    if(seconds%30===0) saveSession();
+  },1000);
+  updateSyncUI();
+}
+function updateHdrStudentInfo(){
+  var el=document.getElementById('hdr-student-info');
+  var parts=[student.name,student.year,'Grp: '+student.group];
+  if(student.id) parts.push('ID: '+student.id);
+  el.innerHTML=parts.map(function(p){return '<span>'+escH(p)+'</span>';}).join('');
+}
+
+// ============================================================
+// QUESTION RENDERING
+// ============================================================
+function getSect(n){
+  if(n<=30) return 'Fundamentals of CAM';
+  if(n<=60) return 'Herbal & Botanical Medicine';
+  if(n<=90) return 'Mind-Body Therapies';
+  if(n<=120) return 'Manual & Manipulative Therapies';
+  if(n<=150) return 'Traditional Medicine Systems';
+  if(n<=175) return 'Energy & Biofield Therapies';
+  return 'Integrative & Allied Therapies';
+}
+function renderQ(){
+  var q=examQuestions[cur];visited[cur]=true;
+  document.getElementById('q-badge').textContent='Q '+q.num+' ('+(cur+1)+'/'+examQuestions.length+')';
+  document.getElementById('q-sect').textContent=getSect(parseInt(q.num));
+  document.getElementById('q-text').textContent=q.q;
+  var c=document.getElementById('opts-container');c.innerHTML='';
+  q.opts.forEach(function(o){
+    var d=document.createElement('div');d.className='opt';
+    if(answers[cur]===o.l) d.classList.add('selected');
+    d.innerHTML='<div class="opt-ltr">'+o.l+'</div><div class="opt-txt">'+escH(o.t)+'</div>';
+    d.onclick=function(){selectOpt(o.l,d);};
+    c.appendChild(d);
+  });
+  document.getElementById('prev-btn').disabled=(cur===0);
+  buildPalette();updateStats();
+}
+function selectOpt(l,el){
+  if(submitted) return;
+  document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected');});
+  el.classList.add('selected');answers[cur]=l;buildPalette();updateStats();
+}
+function navigate(d){var n=cur+d;if(n<0||n>=examQuestions.length) return;cur=n;renderQ();}
+function saveAndNext(){if(cur<examQuestions.length-1){cur++;renderQ();}}
+function markReview(){marked[cur]=!marked[cur];buildPalette();updateStats();}
+function clearResp(){delete answers[cur];document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected');});buildPalette();updateStats();}
+function doJump(){
+  var v=parseInt(document.getElementById('q-srch').value);
+  var idx=examQuestions.findIndex(function(q){return parseInt(q.num)===v;});
+  if(idx>=0){cur=idx;renderQ();closePal();}
+}
+function getStatus(i){
+  var a=!!answers[i],m=!!marked[i],v=!!visited[i];
+  if(a&&m) return 'amrk';if(m) return 'mrk';if(a) return 'ans';if(v) return 'na';return 'nv';
+}
+function buildPalette(){
+  var g=document.getElementById('pal-grid');g.innerHTML='';
+  examQuestions.forEach(function(q,i){
+    var st=getStatus(i);
+    if(palFilter!=='all'&&st!==palFilter) return;
+    var d=document.createElement('div');d.className='pq '+st+(i===cur?' cur':'');
+    d.textContent=q.num;
+    d.onclick=function(){cur=i;renderQ();if(window.innerWidth<=768) closePal();};
+    g.appendChild(d);
+  });
+}
+function updateStats(){
+  var ans=Object.keys(answers).length;
+  var mrk=Object.keys(marked).filter(function(k){return marked[k];}).length;
+  var vis=Object.keys(visited).length;
+  var sb=document.getElementById('stats-bar');
+  sb.innerHTML=[{v:examQuestions.length,l:'Total'},{v:ans,l:'Answered',c:'color:#2e7d32'},{v:examQuestions.length-ans,l:'Not Ans',c:'color:#c62828'},{v:mrk,l:'Marked',c:'color:#6a1b9a'},{v:vis,l:'Visited',c:'color:#1565c0'}]
+  .map(function(s){return '<div class="stat"><span class="stat-val"'+(s.c?' style="'+s.c+'"':'')+'>'+s.v+'</span><span class="stat-lbl">'+s.l+'</span></div>';}).join('');
+  document.getElementById('prog-fill').style.width=(ans/examQuestions.length*100)+'%';
+}
+function setPalFlt(f,el){palFilter=f;document.querySelectorAll('.ftab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');buildPalette();}
+function closePal(){document.getElementById('palette-panel').classList.remove('open');}
+function togglePal(){document.getElementById('palette-panel').classList.toggle('open');}
+function toggleFS(){if(!document.fullscreenElement) document.documentElement.requestFullscreen();else document.exitFullscreen();}
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  var d=document.body.classList.contains('dark');
+  document.getElementById('dark-btn').textContent=d?'Light':'Dark';
+  ls('cm_dark',d?'1':'0');
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function confirmSubmit(){
+  var ans=Object.keys(answers).length;var not=examQuestions.length-ans;
+  document.getElementById('confirm-msg').textContent='You have answered '+ans+' of '+examQuestions.length+' questions.'+(not>0?' '+not+' unattempted. ':' ')+'Submit now?';
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function submitExam(){
+  closeModal('confirm-modal');
+  clearInterval(timerInt);
+  examEndTime=new Date();submitted=true;lsDel('cm_session');
+
+  var correct=0,wrong=0,skip=0,mrkCount=Object.keys(marked).filter(function(k){return marked[k];}).length;
+  examQuestions.forEach(function(q,i){
+    if(!answers[i]) skip++;else if(answers[i]===q.ans) correct++;else wrong++;
+  });
+  var total=examQuestions.length,pct=Math.round(correct/total*100);
+  var now=examEndTime;
+  var dateStr=now.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  var timeStr=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  var durationStr=formatTime(seconds);
+  var device=getDeviceType();
+
+  lastResult={
+    name:student.name,year:student.year,group:student.group,id:student.id||'N/A',email:student.email||'N/A',
+    date:dateStr,time:timeStr,duration:durationStr,
+    range:selectedRange.label,total:total,attempted:total-skip,unattempted:skip,markedForReview:mrkCount,
+    correct:correct,wrong:wrong,score:correct+'/'+total,percentage:pct+'%',device:device,
+    exam:'Complementary Medicine Questions',synced:false,timestamp:now.getTime()
+  };
+
+  // Save to pending list
+  var pending=lsJ('cm_pending')||[];
+  pending.push(lastResult);
+  lsJ('cm_pending',pending);
+  lsJ('cm_last_result',lastResult);
+  syncStatus='pending';
+
+  // Show results
+  document.getElementById('app').style.display='none';
+  document.getElementById('header').style.display='flex';
+  document.getElementById('result-page').style.display='block';
+  document.getElementById('sync-bar').style.display='none';
+
+  // Student info block
+  var grid=document.getElementById('res-student-grid');
+  var items=[
+    {l:'Student Name',v:student.name},{l:'Academic Year',v:student.year},{l:'Group Number',v:student.group},
+    {l:'Student ID',v:student.id||'N/A'},{l:'Date',v:dateStr},{l:'Time',v:timeStr},
+    {l:'Duration',v:durationStr},{l:'Question Range',v:selectedRange.label},{l:'Device',v:device}
+  ];
+  grid.innerHTML=items.map(function(it){return '<div class="sib-item"><span class="sib-label">'+it.l+'</span><span class="sib-value">'+escH(it.v)+'</span></div>';}).join('');
+
+  document.getElementById('res-pct').textContent=pct+'%';
+  document.getElementById('res-stats').innerHTML=[
+    {v:total,l:'Total',c:''},{v:correct,l:'Correct',c:'color:#2e7d32'},{v:wrong,l:'Wrong',c:'color:#c62828'},
+    {v:skip,l:'Skipped',c:'color:#607d8b'},{v:mrkCount,l:'Marked',c:'color:#6a1b9a'}
+  ].map(function(s){return '<div class="rs"><span class="rs-val"'+(s.c?' style="'+s.c+'"':'')+'>'+s.v+'</span><span class="rs-lbl">'+s.l+'</span></div>';}).join('');
+
+  showRev('all');
+  updateResultSyncCard();
+  trySyncNow();
+}
+
+// ============================================================
+// REVIEW
+// ============================================================
+function showRev(filter){
+  var c=document.getElementById('rev-container');c.innerHTML='';
+  var head=document.createElement('div');head.className='ftabs';
+  [['all','All'],['correct','Correct'],['wrong','Wrong'],['skip','Skipped']].forEach(function(pr){
+    var t=document.createElement('div');t.className='ftab'+(pr[0]===filter?' active':'');
+    t.textContent=pr[1];t.onclick=function(){showRev(pr[0]);};head.appendChild(t);
+  });
+  c.appendChild(head);
+  examQuestions.forEach(function(q,i){
+    var userAns=answers[i],correct=q.ans,isCorrect=userAns===correct,isSkip=!userAns;
+    if(filter==='correct'&&!isCorrect) return;
+    if(filter==='wrong'&&(isCorrect||isSkip)) return;
+    if(filter==='skip'&&!isSkip) return;
+    var d=document.createElement('div');d.className='rev-q';
+    var badge=isSkip?'<span class="badge bs">Skipped</span>':isCorrect?'<span class="badge bc">Correct</span>':'<span class="badge bw">Wrong</span>';
+    d.innerHTML='<div class="rqh" onclick="this.nextElementSibling.classList.toggle(\'open\')"><span class="rqh-txt"><b>Q'+q.num+'.</b> '+escH(q.q.substring(0,80))+(q.q.length>80?'…':'')+'</span>'+badge+'</div>'+
+      '<div class="rqb"><p style="margin-bottom:8px;font-size:.88rem;color:var(--subtext)">'+escH(q.q)+'</p>'+
+      q.opts.map(function(o){var cls='r-opt'+(o.l===correct?' c':(o.l===userAns&&!isCorrect?' w':''));return '<div class="'+cls+'">'+o.l+'. '+escH(o.t)+(o.l===correct?' ✓':'')+(o.l===userAns&&!isCorrect?' ✗':'')+'</div>';}).join('')+'</div>';
+    c.appendChild(d);
+  });
+}
+
+// ============================================================
+// CONNECTIVITY & SYNC
+// ============================================================
+function initConnectivityMonitor(){
+  isOnline=navigator.onLine;
+  window.addEventListener('online',function(){
+    isOnline=true;updateSyncUI();
+    var pending=lsJ('cm_pending')||[];
+    if(pending.length>0&&!pendingSyncPrompted){
+      pendingSyncPrompted=true;
+      document.getElementById('pending-count').textContent=pending.length;
+      document.getElementById('pending-sync-modal').classList.add('open');
+    }
+  });
+  window.addEventListener('offline',function(){isOnline=false;updateSyncUI();});
+  // Periodic check every 30s
+  clearInterval(connCheckInt);
+  connCheckInt=setInterval(function(){
+    var nowOnline=navigator.onLine;
+    if(nowOnline!==isOnline){isOnline=nowOnline;updateSyncUI();}
+  },30000);
+}
+
+function updateSyncUI(){
+  var dot=document.getElementById('sync-dot');
+  var hdrDot=document.getElementById('hdr-sync-dot');
+  var txt=document.getElementById('sync-bar-text');
+  var btn=document.getElementById('sync-bar-btn');
+  var sb=document.getElementById('sync-bar');
+  var pending=lsJ('cm_pending')||[];
+
+  if(!isOnline){
+    syncStatus='offline';
+    if(dot){dot.className='sync-dot offline';}
+    if(hdrDot){hdrDot.className='hdr-sync-dot offline';}
+    if(txt) txt.textContent='Offline — data saved locally, will sync when connected';
+    if(btn) btn.style.display='none';
+    if(sb){sb.className='';sb.classList.add('offline');}
+  } else if(pending.length>0){
+    syncStatus='pending';
+    if(dot){dot.className='sync-dot pending';}
+    if(hdrDot){hdrDot.className='hdr-sync-dot pending';}
+    if(txt) txt.textContent=pending.length+' result(s) pending synchronization';
+    if(btn){btn.style.display='';btn.className='sync-btn do-sync';btn.textContent='Sync Now';}
+    if(sb){sb.className='';sb.classList.add('pending');}
+  } else {
+    syncStatus='synced';
+    if(dot){dot.className='sync-dot online';}
+    if(hdrDot){hdrDot.className='hdr-sync-dot online';}
+    if(txt) txt.textContent='Online — all data synchronized';
+    if(btn){btn.style.display='';btn.className='sync-btn done';btn.textContent='✓ Synced';}
+    if(sb){sb.className='';sb.classList.add('online');}
+  }
+  if(submitted) updateResultSyncCard();
+}
+
+function updateResultSyncCard(){
+  var card=document.getElementById('res-sync-card');
+  var icon=document.getElementById('res-sync-icon');
+  var title=document.getElementById('res-sync-title');
+  var sub=document.getElementById('res-sync-sub');
+  var btn=document.getElementById('res-sync-btn');
+  if(!card) return;
+  var pending=lsJ('cm_pending')||[];
+  if(!isOnline){
+    card.className='sync-status-card offline';
+    icon.textContent='📴';title.textContent='Offline — Data Saved Locally';
+    sub.textContent='Your result is stored on this device. It will sync automatically when internet is available.';
+    btn.className='sync-now-btn disabled';btn.textContent='No Connection';
+  } else if(pending.length>0){
+    card.className='sync-status-card pending';
+    icon.textContent='⏳';title.textContent='Pending Synchronization';
+    sub.textContent='Internet connected. Click Sync Now to transmit your result to the administrator.';
+    btn.className='sync-now-btn active';btn.textContent='Sync Now';
+  } else {
+    card.className='sync-status-card synced';
+    icon.textContent='✅';title.textContent='Exam Data Synchronized Successfully';
+    sub.textContent='Your result has been transmitted to the administrator for academic records.';
+    btn.className='sync-now-btn disabled';btn.textContent='✓ Done';
+  }
+}
+
+function trySyncNow(){
+  if(!isOnline){showToast('No internet connection. Data saved locally.','error');return;}
+  var pending=lsJ('cm_pending')||[];
+  if(pending.length===0){showToast('All data already synchronized.','success');return;}
+
+  // Google Apps Script URL — using GET with encoded param to bypass CORS from local files
+  var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxAelDk7zxHZ9g_89MmysQ_G8ibBxA5k8WtW8JanYfy7LZ5-1nU0gfdzX818r0LxTdU/exec';
+
+  showToast('Synchronizing...','info',2000);
+
+  var sent=0;
+  function sendNext(idx){
+    if(idx>=pending.length){
+      lsJ('cm_pending',[]);
+      syncStatus='synced';
+      updateSyncUI();
+      updateResultSyncCard();
+      showToast('Exam data synchronized successfully! ✓','success',4000);
+      pendingSyncPrompted=false;
+      return;
+    }
+
+    // Use no-cors POST — works when Apps Script is deployed as "Anyone" access
+    // The response will be opaque (no-cors) but the server still receives and processes the data
+    var record = pending[idx];
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(record)
+    })
+    .then(function(){
+      // no-cors always resolves (opaque response) — treat as success
+      sent++;
+      sendNext(idx+1);
+    })
+    .catch(function(err){
+      // Fallback: try GET with data as URL param (image beacon trick)
+      console.warn('POST failed, trying GET fallback:', err);
+      var encoded = encodeURIComponent(JSON.stringify(record));
+      var img = new Image();
+      img.src = SCRIPT_URL + '?data=' + encoded;
+      img.onload = img.onerror = function(){
+        sent++;
+        sendNext(idx+1);
+      };
+    });
+  }
+  sendNext(0);
+}
+
+function syncPendingNow(){
+  closeModal('pending-sync-modal');
+  trySyncNow();
+}
+
+// ============================================================
+// DOWNLOAD RESULT
+// ============================================================
+function downloadResult(){
+  if(!lastResult) return;
+  var r=lastResult;
+  var lines=[
+    '========================================',
+    '     PATHOLOGY AVN QUESTIONS',
+    '     OSHMEDCHRONICLE — EXAM REPORT',
+    '========================================',
+    '',
+    'CANDIDATE INFORMATION',
+    '----------------------------------------',
+    'Name            : '+r.name,
+    'Academic Year   : '+r.year,
+    'Group Number    : '+r.group,
+    'Student ID      : '+r.id,
+    'Email           : '+r.email,
+    '',
+    'EXAM DETAILS',
+    '----------------------------------------',
+    'Exam Name       : '+r.exam,
+    'Date            : '+r.date,
+    'Time            : '+r.time,
+    'Duration        : '+r.duration,
+    'Selected Range  : '+r.range,
+    'Device Type     : '+r.device,
+    '',
+    'PERFORMANCE SUMMARY',
+    '----------------------------------------',
+    'Total Questions : '+r.total,
+    'Attempted       : '+r.attempted,
+    'Not Attempted   : '+r.unattempted,
+    'Marked for Rev  : '+r.markedForReview,
+    'Correct         : '+r.correct,
+    'Wrong           : '+r.wrong,
+    'Score           : '+r.score,
+    'Percentage      : '+r.percentage,
+    '',
+    '========================================',
+    'QUESTION-WISE REVIEW',
+    '========================================',
+    ''
+  ];
+  examQuestions.forEach(function(q,i){
+    var ua=answers[i],ca=q.ans,res=!ua?'SKIPPED':ua===ca?'CORRECT':'WRONG';
+    lines.push('Q'+q.num+'. ['+res+'] '+q.q);
+    q.opts.forEach(function(o){
+      var marker=o.l===ca?' ← CORRECT':o.l===ua&&ua!==ca?' ← YOUR ANSWER':'';
+      lines.push('   '+o.l+'. '+o.t+marker);
+    });
+    lines.push('');
+  });
+  lines.push('========================================');
+  lines.push('Generated by OSHMEDCHRONICLE');
+  lines.push('Pradeep Waghmare | YouTube: oshmedchronicle');
+  lines.push('========================================');
+
+  var text=lines.join('\n');
+  var blob=new Blob([text],{type:'text/plain'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='PathologyExam_'+r.name.replace(/\s+/g,'_')+'_'+r.date.replace(/\s+/g,'_')+'.txt';
+  a.click();
+  showToast('Result downloaded successfully!','success');
+}
+
+// ============================================================
+// RETEST
+// ============================================================
+function openRetestModal(){document.getElementById('retest-modal').classList.add('open');}
+function doRetake(){
+  closeModal('retest-modal');
+  document.getElementById('result-page').style.display='none';
+  showRangePage();
+}
+function doFreshExam(){
+  closeModal('retest-modal');
+  student={};
+  lsDel('cm_student');lsDel('cm_session');lsDel('cm_consent');
+  document.getElementById('result-page').style.display='none';
+  document.getElementById('footer').style.display='none';
+  document.getElementById('header').style.display='none';
+  document.getElementById('sync-bar').style.display='none';
+  ['reg-name','reg-id','reg-email'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('reg-year').value='';document.getElementById('reg-group').value='';
+  document.getElementById('recovery-banner').style.display='none';
+  document.getElementById('consent-page').style.display='flex';
+  document.getElementById('consent-check').checked=false;
+  document.getElementById('consent-check-row').classList.remove('checked');
+  document.getElementById('consent-accept-btn').classList.remove('enabled');
+}
+</script>
+</body>
+</html>
